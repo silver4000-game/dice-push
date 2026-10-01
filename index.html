@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#1c4a2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="7マス" />
+  <link rel="manifest" href="./manifest.webmanifest?_ship=zde69vj" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png?_ship=zde69vj" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./pwa-192.png?_ship=zde69vj" />
+  <title>ダイスプッシュ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #10140f; --panel: #1b2418; --line: #33402e; --text: #eef3e8;
+      --muted: #9aaa90; --you: #4aa3e8; --cpu: #e05660; --gold: #e2c15a; --felt: #1c4a2e;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: radial-gradient(800px 420px at 50% 0%, #2f6a45, #142c22);
+      color: var(--text);
+    }
+    #shellMode,#shellRules,#shellRoom{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;background:radial-gradient(ellipse at center,#286848,#142c22);color:#f4ead0;pointer-events:auto}
+    #shellMode.on,#shellRules.on,#shellRoom.on{display:flex}
+    #shellMode h1{position:absolute;top:24%;left:50%;transform:translate(-50%,-50%);margin:0;width:100%;text-align:center;font-size:40px;letter-spacing:.16em;color:#e8c36a;font-weight:900;font-family:Cinzel,"Times New Roman",serif}
+    #shellMode .hero{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);display:flex;gap:10px}
+    #shellMode .ui{position:absolute;top:72%;left:50%;transform:translate(-50%,-50%);width:100%;display:flex;flex-direction:column;align-items:center;z-index:201;pointer-events:auto}
+    .hero-die{width:56px;height:56px;border-radius:12px;background:#f7f0e4;box-shadow:0 3px 0 #0006,inset 0 2px 0 #fff8;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;padding:8px;gap:2px}
+    .hero-die i{width:8px;height:8px;border-radius:50%;background:#1c120c;margin:auto;opacity:0}
+    .hero-die i.on{opacity:1}
+    .hero-die i.red{background:#d01222;opacity:1}
+    .hero-chip{width:56px;height:56px;border-radius:50%;align-self:center;position:relative;
+      --body:#1d4e89;--ring:#d9e7ff;
+      background:repeating-conic-gradient(from 0deg,var(--ring) 0 12deg,var(--body) 12deg 24deg);
+      box-shadow:inset 0 0 0 6px var(--ring),inset 0 0 0 9px var(--body),inset 0 0 0 11px var(--ring),0 2px 0 rgba(0,0,0,.35)}
+    .hero-chip::after{content:"";position:absolute;inset:16px;border-radius:50%;background:var(--body);box-shadow:inset 0 0 0 2px var(--ring)}
+    #shellRules{justify-content:center;overflow:auto;padding:20px}
+    #shellRules .rules-body{width:min(92vw,360px);font-size:13px;line-height:1.55;text-align:left}
+    #shellMode button,#shellRules button,#shellRoom button{
+      border:2px solid #f0d27a;background:linear-gradient(#4a3210,#2c1c08);color:#ffe9a8;
+      border-radius:12px;min-height:46px;min-width:88px;width:auto;padding:0 16px;
+      font-weight:800;font-size:15px}
+    #shellMode .ui .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:auto}
+    #shellRoom{justify-content:center;padding:20px}
+    #shellRoom h1{position:static;transform:none;margin:0 0 8px;font-size:28px}
+    #shellRoom input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8c36a66;background:#0b160f;color:#fff;text-align:center;font-size:18px}
+    .app {
+      position: relative;
+      height: 100dvh; height: 100%; width: 100%; margin: 0;
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+      grid-template-rows: 1fr;
+      padding: 8px; gap: 8px;
+    }
+    header { display: none; }
+    .seat { display: none !important; }
+    .seat.home { grid-column: 3; grid-row: 1; align-self: end; justify-self: stretch; }
+    .seat.away {
+      grid-column: 1; grid-row: 1; align-self: start; justify-self: stretch;
+      transform: rotate(180deg);
+    }
+    .seat .hud {
+      display: flex; flex-direction: column; align-items: stretch;
+      gap: 6px; width: min(36vw, 132px);
+    }
+    .seat .tools { display: flex; gap: 4px; flex-direction: column; align-items: stretch; }
+    .round-badge { display:none !important;
+      display: block;
+      background: #2a3826; border: 1px solid var(--gold);
+      color: var(--gold); font-weight: 800; font-size: .78rem;
+      letter-spacing: .02em; padding: 6px 10px; border-radius: 10px;
+      white-space: nowrap; text-align: center; min-width: 7.5em;
+    }
+    .restart-btn {
+      width: auto; padding: 10px 12px; font-size: .8rem; background: #3d4a38;
+    }
+    .last-btn { background: #6b3a16; }
+    .last-btn.armed { background: #a33b46; }
+    .main { display: contents; }
+    .side { display: contents; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px; min-width: 0; }
+    .who, .subwho { display: none; }
+    .you .who { color: var(--you); }
+    .cpu .who { color: var(--cpu); }
+    .subwho { font-size: .62rem; color: var(--muted); margin-top: 1px; }
+    .scoreline { margin-top: 8px; text-align: center; }
+    .scoreline .lbl { display: block; font-size: .62rem; color: var(--muted); font-weight: 700; letter-spacing: .04em; }
+    .scoreline .val { display: block; font-size: 1.45rem; font-weight: 800; color: var(--gold); line-height: 1.15; margin-top: 2px; }
+    .scoreline .val.plus { color: #6fdc8c; }
+    .scoreline .val.minus { color: #ff6b76; }
+    .chip-row { display: flex; align-items: flex-end; justify-content: center; gap: 8px; }
+    .chip-stack { position: relative; width: auto; height: auto; margin-top: 2px; overflow: visible; display: flex; flex-direction: column; align-items: center; }
+    .chip-stack.opp .chip-pics { width: 32px; height: 34px; }
+    .chip-stack.opp .pchip { width: 28px; height: 28px; left: 2px; }
+    .chip-stack.opp .pchip::after { inset: 8px; }
+    .chip-stack.opp .chip-count { font-size: .82rem; padding: 0 6px; }
+    .chip-stack.clickable .glowbox,
+    .chip-stack.clickable.steal .glowbox {
+      filter: drop-shadow(0 0 12px rgba(226,193,90,.85));
+      isolation: isolate;
+      transform: translateZ(0);
+    }
+    .chip-stack.clickable, .chip-stack.clickable.steal { cursor: pointer; }
+    #youOpp,#cpuOpp,#youStack,#cpuStack{display:none!important}
+    #youStackFree,#cpuStackFree{display:flex!important;overflow:visible;padding:0;margin:0}
+    .chip-stack .chip-count{transform:none!important; writing-mode:horizontal-tb}
+    .seat .card{background:transparent;border:0;padding:0}
+    #youStack,#cpuStack{position:absolute;z-index:20;transform:scale(1.45)}
+
+    .chip-pics { position: relative; width: 44px; height: 52px; overflow: visible; }
+    .pchip {
+      position: absolute; left: 2px; width: 40px; height: 40px; border-radius: 50%;
+      box-shadow: inset 0 0 0 6px var(--ring), inset 0 0 0 9px var(--body), inset 0 0 0 11px var(--ring), 0 2px 0 rgba(0,0,0,.35);
+      background: repeating-conic-gradient(from 0deg, var(--ring) 0 12deg, var(--body) 12deg 24deg);
+    }
+    .pchip::after {
+      content: ""; position: absolute; inset: 13px; border-radius: 50%;
+      background: var(--body); box-shadow: inset 0 0 0 2px var(--ring);
+    }
+    .pchip { transition: top .28s ease; }
+    .chip-count { transition: top .28s ease; }
+    .pchip.you { --body: #1d4e89; --ring: #d9e7ff; }
+    .pchip.cpu { --body: #8b1e28; --ring: #ffd4d7; }
+    .chip-count {
+      position: static; transform: none; margin-top: 4px;
+      min-width: 1.6em; text-align: center;
+      background: #0b0b0b; border: 1px solid var(--gold);
+      color: #fff; border-radius: 999px; padding: 1px 8px;
+      font-size: 1.05rem; font-weight: 800; line-height: 1.25;
+      z-index: 6; letter-spacing: 0;
+    }
+    .table {
+      grid-column: 2; grid-row: 1;
+      height: calc(100dvh - 16px);
+      min-height: 0;
+      width: calc((100dvh - 16px) / 6.15);
+      min-width: 88px;
+      background: var(--felt); border: 5px solid #6b4a22;
+      border-radius: 14px; padding: 6px; display: flex; overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+      align-self: center;
+    }
+    .board { flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 0; padding: 2px; }
+    .cell {
+      flex: 1 1 0; width: 100%; min-height: 36px;
+      background: #0c3a24; border: 2px solid #3d8a58;
+      border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .cell .label { display: none; }
+    .cell.goal-you { background: linear-gradient(180deg, #1a3f66, #124a2c); }
+    .cell.goal-cpu { background: linear-gradient(0deg, #5a2026, #124a2c); }
+    .cell.center { outline: 1px dashed rgba(255,255,255,.16); }
+    .cell.clickable { cursor: pointer; box-shadow: 0 0 0 2px var(--gold), 0 0 12px rgba(226,193,90,.35); }
+    .piece {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #fff4c8, #e2c15a 42%, #8a6a1c);
+      box-shadow: 0 2px 6px rgba(0,0,0,.4);
+    }
+    .dice-layer { position: absolute; inset: 0; pointer-events: none; z-index: 22; overflow: visible; }
+    .tdie { pointer-events: auto; }
+    .tdie {
+      position: absolute; width: 60px; height: 60px; border-radius: 12px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr;
+      padding: 6px; gap: 2px; opacity: 1;
+      transform-style: preserve-3d;
+      will-change: transform, left, top;
+    }
+    .tdie.show { opacity: 1; }
+    .tdie.you, .tdie.cpu {
+      background: #f7f0e4;
+      box-shadow: 0 4px 0 #0006, inset 0 2px 0 #fff8;
+      width: 76px; height: 76px; border-radius: 16px;
+    }
+    .tdie.you { outline: 3px solid #3a8adf; outline-offset: 2px; }
+    .tdie.cpu { outline: 3px solid #d03a44; outline-offset: 2px; }
+    .pip.one { background: #d01222 !important; box-shadow: inset 0 1px 1px #0004, 0 0 6px #d0122288; }
+    .pip {
+      width: 12px; height: 12px; border-radius: 50%; background: #1c120c; margin: auto;
+      box-shadow: inset 0 1px 1px #0005; opacity: 0;
+    }
+    .actions { display: flex; flex-direction: column; gap: 6px; }
+    button {
+      appearance: none; border: 0; cursor: pointer; background: #2f6d3a; color: #fff;
+      padding: 9px 8px; border-radius: 9px; font-weight: 700; font-size: .78rem; width: 100%;
+    }
+    button:disabled { opacity: .4; cursor: default; }
+    button.alt { background: #3d4a38; }
+    button.special { background: #9a6b12; }
+    button.danger { background: #a33b46; }
+    .msg { font-size: .72rem; line-height: 1.35; color: #d5e4d0; min-height: 2.6em; }
+    .log {
+      display: none;
+      height: 54px; overflow: auto; background: var(--panel); border: 1px solid var(--line);
+      border-radius: 8px; padding: 4px 8px; font-size: .68rem; color: #c9d6c2; line-height: 1.35;
+    }
+    .app.with-log .log { display: block; }
+    .overlay {
+      display: none; position: fixed; inset: 0; background: #142c22f5;
+      z-index: 40; align-items: center; justify-content: center;
+    }
+    .overlay.show { display: flex; }
+    .overlay-card {
+      background: #121a10; border: 1px solid var(--gold); border-radius: 16px;
+      padding: 16px 14px; width: min(360px, 94vw); text-align: center;
+    }
+    .overlay-card h2 { margin: 0 0 10px; font-size: 44px; font-weight: 900; letter-spacing: .06em; }
+    .overlay-card h2.ask { font-size: 1.05rem; letter-spacing: 0; font-weight: 800; }
+    .score-art {
+      display: flex; align-items: flex-end; justify-content: center; gap: 12px; flex-wrap: wrap;
+      min-height: 90px; margin: 4px 0 8px;
+    }
+    .score-art .mul { font-size: 1.6rem; font-weight: 800; color: var(--gold); align-self: center; }
+    .stack-wrap { display: flex; flex-direction: column; align-items: center; }
+    .stack-num {
+      font-size: 1.2rem; font-weight: 800; color: #fff; background: #0b0b0b;
+      border: 2px solid var(--gold); border-radius: 999px;
+      padding: 2px 10px; margin-bottom: 6px; min-width: 2.2em;
+    }
+    .chip-cols { display: flex; align-items: flex-end; gap: 8px; }
+    .chip-col { position: relative; width: 38px; }
+    .mini-chip {
+      position: absolute; left: 1px; width: 36px; height: 36px; border-radius: 50%;
+      box-shadow: inset 0 0 0 5px var(--ring), inset 0 0 0 7px var(--body), 0 2px 0 rgba(0,0,0,.3);
+      background: repeating-conic-gradient(from 0deg, var(--ring) 0 12deg, var(--body) 12deg 24deg);
+    }
+    .mini-chip.you { --body: #1d4e89; --ring: #d9e7ff; }
+    .mini-chip.cpu { --body: #8b1e28; --ring: #ffd4d7; }
+    .ov-die {
+      width: 72px; height: 72px; border-radius: 14px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr;
+      padding: 10px; gap: 3px;
+    }
+    .ov-die.clickable {
+      cursor: pointer;
+      box-shadow: 0 0 0 3px #e2c15a, 0 10px 22px rgba(0,0,0,.4);
+    }
+    .ov-die.you, .ov-die.cpu {
+      background: #f7f0e4;
+      box-shadow: 0 4px 0 #0006, inset 0 2px 0 #fff8;
+    }
+    .ov-die.you { outline: 3px solid #3a8adf; outline-offset: 2px; }
+    .ov-die.cpu { outline: 3px solid #d03a44; outline-offset: 2px; }
+    .ov-die .pip { background: #1c120c; }
+    .ov-die .pip.one { background: #d01222; }
+    .ov-die .pip { width: 12px; height: 12px; }
+    .pts { font-size: 1.2rem; color: var(--gold); font-weight: 800; }
+    .tdie.lucky {
+      box-shadow: 0 0 0 3px #ffe08a, 0 0 22px rgba(255,210,80,.8), 3px 6px 0 rgba(0,0,0,.3) !important;
+      animation: luckyPulse .7s ease-in-out 3;
+    }
+    @keyframes luckyPulse {
+      50% { transform: scale(1.08); }
+    }
+    .lucky-banner {
+      display: none; position: absolute; left: 50%; top: 12%; transform: translateX(-50%);
+      z-index: 8; background: linear-gradient(90deg, #7a4e00, #e2c15a, #7a4e00);
+      color: #1a1204; font-weight: 800; font-size: .85rem; letter-spacing: .08em;
+      padding: 6px 14px; border-radius: 999px; pointer-events: none;
+      box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    }
+    .lucky-banner.show { display: block; animation: luckyIn .25s ease-out; }
+    @keyframes luckyIn { from { transform: translateX(-50%) scale(.8); opacity: 1; } }
+    .ov-die.rolling { animation: ovspin .12s linear infinite; }
+    @keyframes ovspin { 50% { transform: rotate(18deg) rotateX(25deg); } }
+    .flash2 {
+      animation: flash2 .9s ease-out;
+    }
+    @keyframes flash2 {
+      0% { box-shadow: inset 0 0 80px rgba(255,210,80,.55); }
+      100% { box-shadow: inset 0 0 0 rgba(255,210,80,0); }
+    }
+    .formula { color: var(--muted); font-size: .78rem; }
+    button { min-height: 44px; font-size: .85rem; }
+    .roll-btn {
+      background: transparent; border: none; box-shadow: none;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      min-height: 0; padding: 4px; width: auto;
+    }
+    .roll-btn:disabled { opacity: .35; }
+    .roll-face {
+      width: 56px; height: 52px; position: relative;
+      display: block;
+    }
+    .cube {
+      position: absolute; left: 14px; top: 10px; width: 28px; height: 28px;
+      transform: rotateX(-22deg) rotateY(32deg);
+      transform-style: preserve-3d;
+    }
+    .cube i {
+      position: absolute; inset: 0; border-radius: 4px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr;
+      padding: 4px; gap: 1px;
+    }
+    .cube i b { width: 5px; height: 5px; border-radius: 50%; background: #fff; margin: auto; opacity: 1; }
+    .cube .ft b:nth-child(1), .cube .ft b:nth-child(3), .cube .ft b:nth-child(5),
+    .cube .ft b:nth-child(7), .cube .ft b:nth-child(9) { opacity: 1; }
+    .cube .tp b:nth-child(5) { opacity: 1; }
+    .cube .rt b:nth-child(1), .cube .rt b:nth-child(5), .cube .rt b:nth-child(9) { opacity: 1; }
+    .cube .ft { transform: translateZ(14px); }
+    .cube .tp { transform: rotateX(90deg) translateZ(14px); }
+    .cube .rt { transform: rotateY(90deg) translateZ(14px); }
+    .roll-btn.you .cube i { background: linear-gradient(145deg, #8ec8ff, #2a6fbd); }
+    .roll-btn.cpu .cube i { background: linear-gradient(145deg, #ff9ea3, #c43b44); }
+    .roll-btn .roll-cap { font-size: .78rem; font-weight: 800; color: var(--text); }
+    .log { display: none !important; }
+    .card.actions, .roll-btn { display: none !important; }
+    #cpuScore { display: none !important; }
+    #winRate{position:fixed;top:10px;left:10px;z-index:25;border:2px solid #e8c36a;border-radius:12px;padding:8px 12px;background:#0a241ccc;color:#e8c36a;font-weight:800;font-size:13px;line-height:1.55;text-align:left;min-width:118px;width:118px;box-sizing:border-box}
+    #winRate .wr-tit{font-size:12px;opacity:.9;margin-bottom:4px;letter-spacing:.06em;text-align:center;width:100%}
+    #winRate .wr-row{display:flex;align-items:center;gap:6px}
+    #winRate .wr-row>span:first-child{flex:0 0 auto}
+    #winRate .wr-n{flex:1;text-align:center}
+    #btnRestart{position:fixed;right:10px;bottom:16px;z-index:25;min-height:40px;min-width:88px;width:auto;padding:8px 12px;font-size:13px;border:2px solid #f0d27a;background:linear-gradient(#4a3210,#2c1c08);color:#ffe9a8;border-radius:12px;font-weight:800}
+    #actHint{position:fixed;top:10px;right:10px;z-index:25;display:flex;flex-direction:column;gap:6px;background:transparent;min-width:0}
+    #actHint div{color:#e8c36a;opacity:.32;font-size:13px;font-weight:800;line-height:1.2;text-align:center;border:2px solid #e8c36a;border-radius:10px;padding:6px 10px;background:#0a241ccc;min-width:72px}
+    #actHint div.on{opacity:1;color:#f4ead0;border-color:#f0d27a}
+    #youScore .lbl{display:none}#youScore .val{font-size:22px}
+    #youScore { position: fixed; left: 12px; bottom: 16px; transform:none; z-index: 26; min-width: 120px; padding: 8px 22px; border: 2px solid #e8c36a; border-radius: 14px; background: #0a241ccc; display:block !important; }
+    .tdie { cursor: pointer; }
+    .tdie.you { outline: 3px solid #3a8adf; outline-offset: 2px; }
+    .tdie.cpu { outline: 3px solid #d03a44; outline-offset: 2px; }
+    .tdie.rolling { animation: dieShake 0.12s infinite; }
+    @keyframes dieShake { 0%{transform:translate(0,0) rotate(0)} 25%{transform:translate(2px,-2px) rotate(-6deg)} 50%{transform:translate(-2px,2px) rotate(5deg)} 75%{transform:translate(2px,1px) rotate(-3deg)} 100%{transform:translate(0,0) rotate(0)} }
+
+  
+#chatBtn{position:fixed;z-index:80;width:88px;min-width:88px;max-width:88px;min-height:46px;height:46px;font-size:15px;font-weight:800;padding:0;border:2px solid #e8c36a;background:linear-gradient(#4a3210,#2c1c08);color:#e8c36a;border-radius:12px;display:none}
+/* chat-pos */
+#chatBtn{right:12px;bottom:58px;left:auto;top:auto}#chatPanel{right:12px;bottom:108px;left:auto;top:auto}
+#chatPanel{display:none;position:fixed;z-index:81;width:min(72vw,240px);background:#0a1810ee;border:2px solid #e8c36a;border-radius:12px;padding:8px}
+#chatPanel.on{display:block}
+#chatPanel input{width:100%;padding:8px;border-radius:8px;border:1px solid #e8c36a66;background:#0b160f;color:#fff;font-size:14px}
+#chatPanel .row{margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#chatPanel button{width:auto;flex:1;min-height:40px;font-size:14px}
+#bubbles{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:82;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:min(90vw,320px)}
+.bubble{max-width:100%;padding:8px 12px;border-radius:16px;font-weight:800;font-size:14px;line-height:1.3;animation:bub 2.8s ease forwards}
+.bubble.me{background:#1d4e89ee;color:#fff;border:2px solid #7ab0ff}
+.bubble.foe{background:#8b1e28ee;color:#fff;border:2px solid #ff8a96}
+@keyframes bub{0%{opacity:0;transform:scale(.86)}12%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+
+</style>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+<section id="shellMode" class="on">
+<h1>ダイスプッシュ</h1>
+<div class="hero">
+  <div class="hero-die"><i></i><i></i><i></i><i></i><i class="red"></i><i></i><i></i><i></i><i></i></div>
+  <div class="hero-chip"></div>
+</div>
+<div class="ui">
+<div class="row" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+<button onclick="pickMode(false)">対人戦</button>
+<button onclick="pickMode(true)">コンピュータ戦</button>
+</div>
+<button id="btnRules" style="margin-top:14px;min-height:36px;font-size:13px" onclick="showShellRules()">ルール説明</button>
+<a href="index.html" style="margin-top:28px;color:#e8c36a;font-weight:800;text-decoration:none;border:2px solid #e8c36a;padding:10px 16px;border-radius:12px">ゲーム選択に戻る</a>
+</div>
+</section>
+<section id="shellRules">
+<h1 style="color:#e8c36a">ルール</h1>
+<div class="rules-body">
+<p>サイコロの大小で勝負。</p>
+<p>勝ったプレイヤーは下記の2つから選んで行動する</p>
+<p>・コマを1マス進める</p>
+<p>・チップを1枚積む</p>
+<p>また2の目で勝ったプレイヤーは下記の2つから選んで行動する。</p>
+<p>・コマをゴールまで進める</p>
+<p>・相手のチップを全て吸収する</p>
+<p>ゴールしたプレイヤーはサイコロを振り、出た目×チップ数　のポイントを獲得する。</p>
+<p>（チップ1枚＝100ポイント）</p>
+</div>
+<button onclick="hideShellRules()">戻る</button>
+</section>
+<section id="shellRoom">
+<h1 style="color:#e8c36a">部屋</h1>
+<p class="hint" style="opacity:.7;font-size:12px;text-align:center;margin:8px 0">合言葉は3文字以上</p>
+<input id="roomCode" maxlength="12" placeholder="あいことば" />
+<div class="row" style="margin-top:10px;display:flex;gap:8px;justify-content:center">
+<button onclick="makeRoom()">部屋を作る</button>
+<button onclick="joinRoom()">入る</button>
+</div>
+<p class="hint" id="roomSt" style="min-height:24px;text-align:center;margin-top:10px"></p>
+<button onclick="backRoom()" style="margin-top:14px">戻る</button>
+</section>
+  <div class="scoreline" id="youScore"><span class="val">±0</span></div>
+<div id="winRate"><div class="wr-tit">ダイス勝率</div><div class="wr-row"><span>今回</span><span class="wr-n">ー</span></div><div class="wr-row"><span>通算</span><span class="wr-n">ー</span></div></div>
+<div id="actHint">
+  <div data-act="move">進む</div>
+  <div data-act="chip">積む</div>
+  <div data-act="steal">奪う</div>
+  <div data-act="goal">ゴール</div>
+</div>
+<button id="btnRestart" onclick="showRestart()">やり直し</button>
+<button id="retryTop" onclick="showRestart()" style="display:none;position:fixed;top:8px;right:8px;z-index:30;min-height:32px;padding:6px 10px;font-size:12px;border:2px solid #f0d27a;background:linear-gradient(#4a3210,#2c1c08);color:#ffe9a8;border-radius:10px;font-weight:800">やり直し</button>
+  <div class="chip-stack" id="cpuStackFree"></div>
+<div class="chip-stack" id="youStackFree"></div>
+  <div class="app" id="app">
+    <div class="seat away">
+      <div class="hud">
+        <div>
+          <div class="card cpu">
+            <div class="who" id="cpuWho">CPU</div>
+            <div class="subwho" id="cpuSub">奥がゴール</div>
+            <div class="chip-row">
+              <div class="chip-stack" id="cpuStack"></div>
+              <div class="chip-stack opp" id="cpuOpp"></div>
+            </div>
+          </div>
+          <div class="card cpu" style="margin-top:6px">
+            <div class="scoreline" id="cpuScore"><span class="lbl">point</span><span class="val">0</span></div>
+          </div>
+        </div>
+        <div class="card actions cpu">
+          <button class="roll-btn cpu" onclick="rollMine('cpu')">
+            <div class="roll-face"><div class="cube"><i class="ft"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="tp"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="rt"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i></div></div>
+            <span class="roll-cap">振る</span>
+          </button>
+          <div id="actionsRed"></div>
+        </div>
+        <div class="tools">
+          <div class="round-badge roundDup">第1試合</div>
+          <button class="restart-btn last-btn" onclick="markLast()" style="display:none">これで最後</button>
+          
+        </div>
+      </div>
+    </div>
+    <div class="table" id="table">
+      <div class="board" id="board">
+        <div class="cell goal-you"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell center"><div class="piece"></div></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell goal-cpu"></div>
+      </div>
+      <div class="lucky-banner" id="luckyBanner">LUCKY 2</div>
+    </div>
+    <div class="dice-layer" id="diceLayer">
+      <div class="tdie cpu show" id="cpuDie" onclick="rollMine('cpu')"></div>
+      <div class="tdie you show" id="youDie" onclick="rollMine('you')"></div>
+    </div>
+    <div class="seat home">
+      <div class="hud">
+        <div>
+          <div class="card you">
+            <div class="who" id="youWho">あなた</div>
+            <div class="subwho" id="youSub">奥がゴール</div>
+            <div class="chip-row">
+              <div class="chip-stack" id="youStack"></div>
+              <div class="chip-stack opp" id="youOpp"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card actions">
+          <button class="roll-btn you" onclick="rollMine('you')">
+            <div class="roll-face"><div class="cube"><i class="ft"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="tp"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="rt"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i></div></div>
+            <span class="roll-cap">振る</span>
+          </button>
+          <div id="actions"></div>
+        </div>
+        <div class="tools">
+          <div class="round-badge" id="roundBadge">第1試合</div>
+          <button class="restart-btn last-btn" id="lastBtn" onclick="markLast()" style="display:none">これで最後</button>
+          
+        </div>
+      </div>
+    </div>
+    <div class="card" id="msgCard" style="display:none">
+      <div class="msg" id="msg">サイコロを振って開始</div>
+    </div>
+    <div class="log" id="log"></div>
+  </div>
+  <div class="overlay" id="modeOverlay">
+    <div class="overlay-card">
+      <h2>対戦モード</h2>
+      <div class="formula">先にモードとCPUの強さを選んでください</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+        <button onclick="startMode(true,'strong')">コンピューター戦・つよい</button>
+        <button onclick="startMode(true,'normal')">コンピューター戦・ふつう</button>
+        <button onclick="startMode(true,'weak')">コンピューター戦・よわい</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="lengthOverlay">
+    <div class="overlay-card">
+      <h2>試合数</h2>
+      <div class="formula">何戦やりますか</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+        <button onclick="startSeries(1)">1戦</button>
+        <button onclick="startSeries(3)">3戦</button>
+        <button onclick="startSeries(5)">5戦</button>
+        <button class="alt" onclick="startSeries(0)">無制限</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="restartOverlay">
+    <div class="overlay-card">
+      <h2 class="ask">モード選択に戻りますか？</h2>
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
+        <button onclick="backToMode()">はい</button>
+        <button class="alt" onclick="hideRestart()">いいえ</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="overlay">
+    <div class="overlay-card">
+      <h2 id="ovTitle">ゴール！</h2>
+      <div class="score-art" id="scoreArt"></div>
+      <div class="formula" id="ovFormula"></div>
+      <div class="pts" id="ovPts"></div>
+      <div id="ovBtns" style="margin-top:12px;display:none;gap:8px">
+        <button onclick="nextRound()">続けて勝負</button>
+        <button class="alt" onclick="resetAll()">スコアごとリセット</button>
+        <button class="alt" onclick="showMode()">モード変更</button>
+      </div>
+    </div>
+  </div>
+<script>
+const YOU = "you", CPU = "cpu", CHIP_PT = 100;
+let vsCpu = true;
+let netPvp=false, netHost=false, netMe="you", netPeer=null, netConn=null;
+let recWins=0, recGames=0, matchWins=0, matchGames=0;
+let goalWait=null, goalStopDie=null;
+let nextReady={you:false,cpu:false};
+let cpuLevel = "normal";
+let matchLimit = 0;
+let lastRequested = false;
+let ac = null;
+function getAC() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === "suspended") ac.resume();
+  return ac;
+}
+function tone(freq, t0, dur, type, gain, freqEnd) {
+  const ctx = getAC();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  if (freqEnd) o.frequency.exponentialRampToValueAtTime(Math.max(40, freqEnd), t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function sfxChip() {
+  const ctx = getAC();
+  const t0 = ctx.currentTime;
+  tone(1860, t0, 0.22, "sine", 0.18, 2480);
+  tone(2790, t0 + 0.03, 0.28, "triangle", 0.09, 3200);
+  tone(3920, t0 + 0.055, 0.35, "sine", 0.05, 2100);
+}
+function sfxMove() {
+  const ctx = getAC();
+  const t0 = ctx.currentTime;
+  tone(420, t0, 0.09, "sine", 0.07, 180);
+  tone(260, t0 + 0.01, 0.08, "triangle", 0.04, 90);
+  const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * (1 - i/d.length);
+  const src = ctx.createBufferSource();
+  const f = ctx.createBiquadFilter();
+  const g = ctx.createGain();
+  src.buffer = buf;
+  f.type = "bandpass"; f.frequency.value = 1400; f.Q.value = 0.7;
+  g.gain.setValueAtTime(0.08, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+  src.connect(f); f.connect(g); g.connect(ctx.destination);
+  src.start(t0); src.stop(t0 + 0.1);
+}
+function sfxLucky2() {
+  const ctx = getAC();
+  const t0 = ctx.currentTime;
+  tone(784, t0, 0.16, "sine", 0.14, 784);
+  tone(1175, t0 + 0.09, 0.22, "triangle", 0.13, 1568);
+  tone(1568, t0 + 0.18, 0.32, "sine", 0.11, 2093);
+  tone(2349, t0 + 0.22, 0.4, "sine", 0.06, 3136);
+}
+function sfxSteal() {
+  const ctx = getAC();
+  const t0 = ctx.currentTime;
+  tone(220, t0, 0.12, "triangle", 0.08, 110);
+  tone(1480, t0 + 0.04, 0.14, "sine", 0.12, 1900);
+  tone(1760, t0 + 0.10, 0.16, "sine", 0.11, 2100);
+  tone(2090, t0 + 0.16, 0.18, "triangle", 0.09, 2400);
+  tone(1320, t0 + 0.22, 0.22, "sine", 0.07, 980);
+}
+function noiseBurst(t0, dur, freq, gain) {
+  const ctx = getAC();
+  const n = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const src = ctx.createBufferSource();
+  const f = ctx.createBiquadFilter();
+  const g = ctx.createGain();
+  src.buffer = buf;
+  f.type = "bandpass";
+  f.frequency.value = freq;
+  f.Q.value = 1.2;
+  g.gain.setValueAtTime(gain, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(f); f.connect(g); g.connect(ctx.destination);
+  src.start(t0); src.stop(t0 + dur + 0.02);
+}
+function sfxRoll() {
+  const ctx = getAC();
+  const t0 = ctx.currentTime;
+  const times = [0, 0.08, 0.16, 0.24, 0.33, 0.42, 0.52, 0.62, 0.73];
+  times.forEach(function(dt, i) {
+    const a = i % 2 === 0;
+    const last = i === times.length - 1;
+    noiseBurst(t0 + dt, last ? 0.08 : 0.038, a ? 2100 : 3100, last ? 0.075 : 0.05);
+    tone(a ? 1480 : 1980, t0 + dt, 0.032, "triangle", 0.045, a ? 1700 : 2300);
+    tone(a ? 2600 : 3400, t0 + dt, 0.022, "sine", 0.018, a ? 2200 : 3000);
+  });
+}
+
+const PIP_POS = {1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
+let pos = 3;
+let chips = { you: 1, cpu: 1 };
+let score = { you: 0, cpu: 0 };
+let match = 1;
+let busy = false, over = false, turn = 0;
+let pending = null;
+let dicePhys = null;
+let rafId = 0;
+
+function $(id) { return document.getElementById(id); }
+function d6() { return 1 + Math.floor(Math.random() * 6); }
+function foeName() { return vsCpu ? "CPU" : "相手"; }
+function youName() { return "あなた"; }
+function fmtDiff(n) {
+  if (n > 0) return "+" + String(n);
+  if (n < 0) return "−" + String(Math.abs(n));
+  return "±0";
+}
+function renderRound() {
+  const label = matchLimit
+    ? ("第" + match + " / " + matchLimit + "試合")
+    : (lastRequested ? ("第" + match + "試合・最終") : ("第" + match + "試合・無制限"));
+  document.querySelectorAll(".round-badge").forEach(function(el) { el.textContent = label; });
+  document.querySelectorAll(".last-btn").forEach(function(lastBtn) {
+    lastBtn.style.display = "none";
+    lastBtn.classList.toggle("armed", lastRequested);
+    lastBtn.textContent = lastRequested ? "これで最後" : "これで最後";
+  });
+}
+function paintWinRate(){
+  const el=$("winRate"); if(!el)return;
+  const fmt=function(w,g){ return g? (Math.round(w/g*100)+"%") : "ー"; };
+  el.innerHTML='<div class="wr-tit">ダイス勝率</div><div class="wr-row"><span>今回</span><span class="wr-n">'+fmt(matchWins,matchGames)+'</span></div><div class="wr-row"><span>通算</span><span class="wr-n">'+fmt(recWins,recGames)+'</span></div>';
+}
+function paintActs(){
+  const box=$("actHint"); if(!box)return;
+  box.querySelectorAll("[data-act]").forEach(function(el){el.classList.remove("on")});
+  if(!pending||over) return;
+  const keys=pending.special?["goal","steal"]:["move","chip"];
+  keys.forEach(function(k){const el=box.querySelector('[data-act="'+k+'"]'); if(el) el.classList.add("on")});
+}
+function renderScores() {
+  const dy = score.you - score.cpu;
+  const dc = score.cpu - score.you;
+  $("youScore").innerHTML = '<span class="val ' + (dy>0?"plus":dy<0?"minus":"") + '">' + fmtDiff(dy) + '</span>';
+  $("cpuScore").innerHTML = '<span class="lbl">point</span><span class="val ' + (dc>0?"plus":dc<0?"minus":"") + '">' + fmtDiff(dc) + '</span>';
+}
+function refreshLabels() {
+  const lv = cpuLevel === "strong" ? "つよい" : cpuLevel === "weak" ? "よわい" : "ふつう";
+  $("cpuWho").textContent = vsCpu ? ("CPU・" + lv) : foeName();
+  $("cpuSub").textContent = vsCpu ? "手前がCPUゴール" : "手前が赤のゴール";
+  $("youWho").textContent = youName();
+  $("youSub").textContent = vsCpu ? "奥があなたのゴール" : "奥が青のゴール";
+  $("app").classList.toggle("with-log", !!vsCpu);
+}
+
+function paintDie(el, n) {
+  el.innerHTML = "";
+  for (let i = 1; i <= 9; i++) {
+    const p = document.createElement("div");
+    p.className = "pip" + (n===1 && i===5 ? " one" : "");
+    if (PIP_POS[n] && PIP_POS[n].indexOf(i) !== -1) p.style.opacity = "1";
+    el.appendChild(p);
+  }
+}
+
+function layerSize() {
+  const layer = $("diceLayer");
+  return { w: layer.clientWidth, h: layer.clientHeight };
+}
+
+function makeDieState(el, x, y, vx, vy) {
+  return { el: el, x: x, y: y, vx: vx, vy: vy, rot: (Math.random()*24-12), vr: (Math.random()*4-2), spinX: 18+Math.random()*20, spinY: 12+Math.random()*16, vsx: 3+Math.random()*2, vsy: 2.5+Math.random()*2, face: d6() };
+}
+
+function applyDie(d) {
+  d.el.style.left = d.x + "px";
+  d.el.style.top = d.y + "px";
+  d.el.style.transform = "rotateX(" + d.spinX + "deg) rotateY(" + d.spinY + "deg) rotateZ(" + d.rot + "deg)";
+}
+
+function alley(who) {
+  const app = $("app").getBoundingClientRect();
+  const tb = $("table").getBoundingClientRect();
+  const home = document.querySelector(".seat.home").getBoundingClientRect();
+  const away = document.querySelector(".seat.away").getBoundingClientRect();
+  const size = 60;
+  const pad = 8;
+  const boardL = tb.left - app.left;
+  const boardR = tb.right - app.left;
+  const homeT = home.top - app.top;
+  const awayB = away.bottom - app.top;
+  if (who === YOU) {
+    let minX = Math.max(pad, boardL - size - 80);
+    let maxX = boardL - size - 8;
+    if (!(maxX > minX + 8)) { minX = pad; maxX = Math.max(minX + 40, boardL - size - 8); }
+    let minY = Math.max(pad, Math.min(homeT - 20, app.height * 0.42));
+    let maxY = app.height - size - pad;
+    if (maxY < minY + 20) { minY = pad; maxY = app.height - size - pad; }
+    return { minX: minX, maxX: maxX, minY: minY, maxY: maxY };
+  }
+  let minX = boardR + 8;
+  let maxX = Math.min(app.width - size - pad, boardR + 8 + 80);
+  if (!(maxX > minX + 8)) maxX = app.width - size - pad;
+  let minY = pad;
+  let maxY = Math.min(app.height - size - pad, Math.max(awayB + 8, app.height * 0.48));
+  if (maxY < minY + 20) { minY = pad; maxY = app.height * 0.5; }
+  return { minX: minX, maxX: maxX, minY: minY, maxY: maxY };
+}
+function parkDice(){
+  const layer=$("diceLayer"), table=$("table");
+  if(!layer||!table)return;
+  const host=$("app")||document.body;
+  const ys=$("youStackFree"), cs=$("cpuStackFree");
+  if(ys && ys.parentNode!==host) host.appendChild(ys);
+  if(cs && cs.parentNode!==host) host.appendChild(cs);
+  const lr=(host).getBoundingClientRect();
+  const tr=table.getBoundingClientRect();
+  const size=76;
+  const cellH=tr.height/7;
+  const leftW=Math.max(tr.left-lr.left, size+8);
+  const rightW=Math.max(lr.right-tr.right, size+8);
+  const leftCx=leftW/2;
+  const rightCx=(tr.right-lr.left)+rightW/2;
+  const y34=tr.top-lr.top+cellH*2.5;
+  const y45=tr.top-lr.top+cellH*4.5;
+  const clamp=(v,m)=>Math.max(0,Math.min(m||800,v));
+  const you=$("youDie"), cpu=$("cpuDie");
+  const yx=rightCx-size/2, yy=y45-size/2;
+  const cx=leftCx-size/2, cy=y34-size/2;
+  if(you){
+    you.style.left=clamp(yx,(lr.width||300)-size)+"px";
+    you.style.top=clamp(yy,(lr.height||600)-size)+"px";
+    you.classList.add("show", myColor()); you.classList.remove(myColor()===YOU?"cpu":"you");
+    you.onclick=function(){ rollMine(netPvp?netMe:YOU); };
+    paintDie(you, rollVals[netPvp?netMe:YOU]||1);
+  }
+  if(cpu){
+    cpu.style.left=clamp(cx,(lr.width||300)-size)+"px";
+    cpu.style.top=clamp(cy,(lr.height||600)-size)+"px";
+    cpu.classList.add("show", oppColor()); cpu.classList.remove(oppColor()===YOU?"cpu":"you");
+    cpu.onclick=null;
+    paintDie(cpu, rollVals[netPvp?(netMe===YOU?CPU:YOU):CPU]||1);
+  }
+  function put(el,x,y){
+    if(!el)return;
+    el.style.position="absolute";
+    el.style.left=clamp(x,(lr.width||300)-48)+"px";
+    el.style.top=clamp(y,(lr.height||600)-48)+"px";
+    el.style.zIndex="23";
+    el.style.pointerEvents="auto";
+    el.style.display="flex";
+    el.style.transform="none";
+  }
+  const mid=(tr.left-lr.left)+tr.width/2;
+  const chipW=78;
+  const youX=you?parseFloat(you.style.left):yx;
+  const youY=you?parseFloat(you.style.top):yy;
+  const cpuX=cpu?parseFloat(cpu.style.left):cx;
+  const cpuY=cpu?parseFloat(cpu.style.top):cy;
+  put(ys, 2*mid-(youX+size/2)-chipW/2, youY+size/2-chipW/2);
+  put(cs, 2*mid-(cpuX+size/2)-chipW/2, cpuY+size/2-chipW/2);
+  renderChips();
+}
+function myColor(){ return (netPvp && netMe===CPU) ? CPU : YOU; }
+function oppColor(){ return myColor()===YOU ? CPU : YOU; }
+function dieEl(who){
+  if(!netPvp) return who===YOU ? $("youDie") : $("cpuDie");
+  return who===netMe ? $("youDie") : $("cpuDie");
+}
+function startTumble(who) {
+  const el = dieEl(who); if(!el)return;
+  el.classList.add("show","rolling");
+  if(el._iv) clearInterval(el._iv);
+  let k=0;
+  el._iv=setInterval(function(){ paintDie(el, d6()); if(++k>=8){clearInterval(el._iv);el._iv=null} },60);
+}
+function stopTumble(who, n) {
+  cancelAnimationFrame(rafId);
+  const el = dieEl(who);
+  if(!el)return;
+  if(el._iv) clearInterval(el._iv);
+  el.classList.remove("rolling");
+  paintDie(el, n);
+  if (dicePhys && dicePhys[0] && dicePhys[0].el === el) {
+    dicePhys[0].face = n;
+    dicePhys[0].spinX = 0;
+    dicePhys[0].spinY = 0;
+    applyDie(dicePhys[0]);
+  }
+}
+
+function hideDiceSoon(){}
+
+function fillChipBox(el, owner, extraClass) {
+  if (!el) return;
+  const n = chips[owner];
+  let selectable = false;
+  if (pending) {
+    if (!pending.special && owner === pending.who) selectable = true;
+    if (pending.special && owner !== pending.who) selectable = true;
+  }
+  el.style.filter = "";
+  el.className = "chip-stack" + (extraClass ? " " + extraClass : "") + (selectable ? " clickable" + (owner !== pending.who ? " steal" : "") : "");
+  el.onclick = selectable ? (owner === pending.who ? chooseChip : chooseSteal) : null;
+  const show = Math.min(Math.max(n, 1), 4);
+  const cTop = (14 - (show-1)*6) - 2;
+  let glow = el.querySelector(".glowbox");
+  if(!glow){
+    el.innerHTML = '<div class="glowbox" style="position:relative;width:78px;height:78px;overflow:visible"></div><div class="chip-count"></div>';
+    glow = el.querySelector(".glowbox");
+  }
+  const extras=[...glow.querySelectorAll(".pchip")];
+  while(extras.length > show){ const gone=extras.pop(); if(gone&&gone.parentNode)gone.parentNode.removeChild(gone); }
+  const existing = glow.querySelectorAll(".pchip");
+  for (let i = 0; i < show; i++) {
+    let d = existing[i];
+    if(!d){
+      d=document.createElement("div");
+      d.className="pchip "+owner;
+      d.style.cssText="position:absolute;left:4px;width:68px;height:68px;";
+      glow.appendChild(d);
+    }
+    d.style.top=(14 - i * 6)+"px";
+    d.style.zIndex=String(i);
+    d.style.opacity = n===0 ? ".28" : "1";
+  }
+  let cnt = el.querySelector(":scope > .chip-count");
+  if(!cnt){ cnt=document.createElement("div"); cnt.className="chip-count"; el.appendChild(cnt); }
+  cnt.style.cssText="position:absolute;top:"+cTop+"px;left:-10px;font-size:20px;font-weight:900;color:#fff;text-shadow:0 1px 2px #000;z-index:9";
+  cnt.textContent=String(n);
+}
+function renderChips(who) { who=who;
+  const me = netPvp ? netMe : YOU;
+  const opp = me===YOU ? CPU : YOU;
+  fillChipBox($("youStackFree")||$("youStack"), me, "");
+  fillChipBox($("cpuStackFree")||$("cpuStack"), opp, "");
+}
+
+function renderBoard() {
+  const board = $("board");
+  board.innerHTML = "";
+  const order = (netPvp && netMe===CPU) ? [6,5,4,3,2,1,0] : [0,1,2,3,4,5,6];
+  for (const i of order) {
+    const c = document.createElement("div");
+    c.className = "cell";
+    if (i === 0) c.classList.add("goal-you");
+    if (i === 6) c.classList.add("goal-cpu");
+    if (i === 3) c.classList.add("center");
+    const canMove = pending && !pending.special && (
+      (pending.who === YOU && i === pos - 1) ||
+      (pending.who === CPU && i === pos + 1)
+    );
+    const canGoal = pending && pending.special && (
+      (pending.who === YOU && i === 0) ||
+      (pending.who === CPU && i === 6)
+    );
+    if (canMove || canGoal) {
+      c.classList.add("clickable");
+      c.onclick = canGoal ? chooseGoal : chooseMove;
+    }
+    const lab = document.createElement("div");
+    lab.className = "label";
+    if (i === 0) lab.textContent = "";
+    else if (i === 6) lab.textContent = "";
+    else lab.textContent = String(7 - i);
+    c.appendChild(lab);
+    if (i === pos) {
+      const p = document.createElement("div");
+      p.className = "piece";
+      c.appendChild(p);
+    }
+    board.appendChild(c);
+  }
+  renderChips(YOU); renderChips(CPU); renderScores(); renderRound(); paintActs(); paintWinRate();
+}
+
+function log(t) { const d = document.createElement("div"); d.textContent = t; $("log").prepend(d); }
+function setMsg(t) { $("msg").textContent = t; }
+function paintRollFaces() {}
+function setRolling(on, label) {
+  document.querySelectorAll(".roll-btn").forEach(function(btn) {
+    const side = btn.classList.contains("cpu") ? CPU : YOU;
+    const show = on && !rollVals[side];
+    btn.style.display = on ? "flex" : "none";
+    btn.disabled = !show;
+    const cap = btn.querySelector(".roll-cap");
+    if (cap) cap.textContent = "振る";
+  });
+}
+function setActions(html, who) {
+  const red = who === CPU;
+  const text = html || "";
+  const isRoll = text.indexOf("rollDice") !== -1;
+  if (isRoll) {
+    const again = text.indexOf("もう一度") !== -1;
+    setRolling(true, again ? "もう一度振る" : "サイコロを振る");
+    $("actionsRed").innerHTML = "";
+    $("actions").innerHTML = "";
+    return;
+  }
+  if (text.indexOf("ロール中") !== -1 || text.indexOf("考え中") !== -1) {
+    setRolling(false);
+    $("actionsRed").innerHTML = red ? text : "";
+    $("actions").innerHTML = red ? "" : text;
+    return;
+  }
+  setRolling(false);
+  $("actionsRed").innerHTML = red ? text : "";
+  $("actions").innerHTML = red ? "" : text;
+}
+function applyMove(who) { pos = who === YOU ? Math.max(0, pos - 1) : Math.min(6, pos + 1); }
+function applyChip(who) { chips[who] += 1; }
+function applyGoal(who) { pos = who === YOU ? 0 : 6; }
+function applySteal(who) {
+  const other = who === YOU ? CPU : YOU;
+  chips[who] += chips[other];
+  chips[other] = 0;
+}
+function isGoal(who) { return (who === YOU && pos === 0) || (who === CPU && pos === 6); }
+
+function dieHTML(who, n) {
+  let s = '<div class="ov-die ' + who + '">';
+  for (let i = 1; i <= 9; i++) s += '<div class="pip" style="opacity:' + (PIP_POS[n].indexOf(i) !== -1 ? 1 : 0) + '"></div>';
+  return s + "</div>";
+}
+
+function buildChipStacks(who, n) {
+  const wrap = document.createElement("div");
+  wrap.className = "stack-wrap";
+  const num = document.createElement("div");
+  num.className = "stack-num";
+  num.textContent = n;
+  wrap.appendChild(num);
+  const cols = document.createElement("div");
+  cols.className = "chip-cols";
+  const colCount = Math.max(1, Math.ceil(n / 10));
+  const step = 8;
+  for (let c = 0; c < colCount; c++) {
+    const inCol = (c === colCount - 1 && n > 0) ? ((n - 1) % 10) + 1 : (n === 0 ? 0 : 10);
+    const col = document.createElement("div");
+    col.className = "chip-col";
+    col.style.height = (36 + Math.max(inCol - 1, 0) * step) + "px";
+    for (let i = 0; i < inCol; i++) {
+      const ch = document.createElement("div");
+      ch.className = "mini-chip " + who;
+      ch.style.bottom = (i * step) + "px";
+      ch.style.zIndex = String(i);
+      col.appendChild(ch);
+    }
+    cols.appendChild(col);
+  }
+  wrap.appendChild(cols);
+  return wrap;
+}
+
+async function celebrateGoal(who, die) {
+  over = true; pending = null; renderBoard();
+  const name = who === YOU ? youName() : foeName();
+  const n = chips[who];
+  $("ovTitle").textContent = "倍率抽選"; $("ovTitle").style.fontSize="22px";
+  $("ovPts").textContent = "";
+  $("ovBtns").style.display = "none";
+  const art = $("scoreArt");
+  const canTap = netPvp ? (who === netMe) : ((who === YOU) || !vsCpu);
+  art.innerHTML = '<div class="ov-die rolling ' + (canTap ? "clickable " : "") + who + '" id="ovRoll"></div>';
+  const ov = $("ovRoll");
+  if (ov && !canTap) ov.style.pointerEvents = "none";
+  paintDie(ov, d6());
+  $("overlay").classList.add("show");
+  $("ovFormula").textContent = canTap ? "タップ" : "相手待ち";
+  const spin = setInterval(function() { if (ov) paintDie(ov, d6()); }, 80);
+  if (canTap) {
+    await new Promise(function(resolve) {
+      function stop(e) {
+        if (e) e.preventDefault();
+        $("overlay").removeEventListener("pointerdown", stop);
+        ov.removeEventListener("pointerdown", stop);
+        resolve();
+      }
+      $("overlay").addEventListener("pointerdown", stop);
+      ov.addEventListener("pointerdown", stop);
+    });
+    if (netPvp) sendNet({type:"goalStop", die:die});
+  } else if (netPvp) {
+    if (goalStopDie==null) {
+      await Promise.race([
+        new Promise(function(resolve){ goalWait=resolve; }),
+        new Promise(function(r){ setTimeout(r, 2500); })
+      ]);
+      goalWait=null; goalStopDie=null;
+    } else {
+      goalStopDie=null;
+    }
+  } else {
+    await new Promise(function(r) { setTimeout(r, 900); });
+  }
+  clearInterval(spin);
+  ov.classList.remove("rolling", "clickable");
+  paintDie(ov, die);
+  await new Promise(function(r) { setTimeout(r, 280); });
+  const gained = n * die * CHIP_PT;
+  art.innerHTML = "";
+  art.style.alignItems = "center";
+  const pile = document.createElement("div");
+  pile.id = "ovChip";
+  art.appendChild(pile);
+  const saved = chips[who];
+  chips[who] = n;
+  fillChipBox(pile, who, "");
+  chips[who] = saved;
+  pile.style.position = "relative";
+  pile.style.transform = "none";
+  pile.onclick = null;
+  pile.className = "chip-stack";
+  const mul = document.createElement("div");
+  mul.className = "mul"; mul.textContent = "×";
+  art.appendChild(mul);
+  art.insertAdjacentHTML("beforeend", dieHTML(who, die));
+  score[who] += gained;
+  renderScores();
+  paintWinRate();
+  const mineGot = who === YOU ? gained : -gained;
+  const life = score.you - score.cpu;
+  const fmt=function(n){return n>0?"+"+n:n===0?"±0":String(n)};
+  const col=function(n){return n>0?"#6aa8ff":n<0?"#ff5a6a":"#e8c36a"};
+  $("ovTitle").textContent = who === YOU ? "Win" : "Lose"; $("ovTitle").style.fontSize="44px";
+  $("ovFormula").innerHTML = '<div style="font-size:18px;font-weight:800;color:#e8c36a">今回</div>';
+  $("ovPts").innerHTML = '<div style="color:'+col(mineGot)+';font-size:36px;font-weight:900">'+fmt(mineGot)+'</div><div style="font-size:18px;font-weight:800;color:#e8c36a;margin-top:10px">今までの通算</div><div style="color:'+col(life)+';font-size:36px;font-weight:900">'+fmt(life)+'</div>';
+  $("ovBtns").innerHTML = '<button onclick="askNext()">もう1度</button><button class="alt" onclick="showMode()">やめる</button>';
+  $("ovBtns").style.display = "flex";
+  log("第" + match + "試合 " + name + "勝ち +" + gained + "（" + youName() + fmtDiff(score.you-score.cpu) + " / " + foeName() + fmtDiff(score.cpu-score.you) + "）");
+  setMsg(name + "の勝ち。ポイント持ち越し");
+  setActions("");
+}
+
+function afterAction(who, action, die) {
+  const name = who === YOU ? youName() : foeName();
+  const labels = {
+    move: "駒を奥へ1マス",
+    chip: "チップ+1（" + chips[who] + "枚）",
+    goal: "特殊① ゴールまで進めた",
+    steal: "特殊② チップ全奪取（" + chips[who] + "枚）"
+  };
+  log(name + "：" + labels[action]);
+  pending = null;
+  rollVals = { you: 0, cpu: 0 };
+  rollingWho = null;
+  ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){
+    const e=$(id); if(!e)return;
+    e.classList.remove("clickable","steal");
+    e.style.filter="";
+  });
+  renderBoard();
+  if (isGoal(who)) { celebrateGoal(who, die); return; }
+  setMsg(name + "の行動完了");
+  setActions('<button onclick="rollDice()">サイコロを振る</button>');
+}
+
+function hideDice() {
+  $("youDie").classList.remove("show");
+  $("cpuDie").classList.remove("show");
+}
+function runAction(who, action, die) {
+  if (over || !action) return;
+  hideDice();
+  if (action === "move") { applyMove(who); sfxMove(); }
+  if (action === "chip") { applyChip(who); sfxChip(); }
+  if (action === "goal") applyGoal(who);
+  if (action === "steal") { applySteal(who); sfxSteal(); }
+  afterAction(who, action, die);
+}
+function emitAct(act){
+  if (!pending || busy) return;
+  if (netPvp && pending.who !== netMe) return;
+  if (netPvp) sendNet({type:"act",who:pending.who,act:act,die:pending.die});
+  runAction(pending.who, act, pending.die);
+}
+function chooseMove() { emitAct("move"); }
+function chooseChip() { emitAct("chip"); }
+function chooseGoal() { emitAct("goal"); }
+function chooseSteal() { emitAct("steal"); }
+
+function flashLucky(who) {
+  sfxLucky2();
+  const el = dieEl(who);
+  if(!el)return;
+  el.classList.add("lucky");
+  $("luckyBanner").classList.add("show");
+  $("table").classList.add("flash2");
+  setTimeout(function() {
+    el.classList.remove("lucky");
+    $("luckyBanner").classList.remove("show");
+    $("table").classList.remove("flash2");
+  }, 1600);
+}
+
+function startChoice(who, die) {
+  pending = { who: who, die: die, special: die === 2 };
+  renderBoard();
+  const n = who === YOU ? youName() : foeName();
+  if (die === 2) {
+    flashLucky(who);
+    setMsg(n + " LUCKY 2！特殊行動");
+    setActions('<button class="special" onclick="chooseGoal()">①ゴールへ</button><button class="danger" onclick="chooseSteal()">②チップ奪取</button>', who);
+  } else {
+    setMsg(n + "の勝ち。マスかチップを選ぶ");
+    setActions('<button onclick="chooseMove()">１：1マス進める</button><button class="alt" onclick="chooseChip()">２：チップを積む</button>', who);
+  }
+}
+
+function followRate() {
+  if (cpuLevel === "strong") return 1;
+  if (cpuLevel === "weak") return 0.22;
+  return 0.58;
+}
+function pickByEV(a, evA, b, evB) {
+  const close = Math.abs(evA - evB) < 80;
+  if (cpuLevel === "strong" && !close) return evA >= evB ? a : b;
+  if (close && cpuLevel === "strong") return evA >= evB ? a : b;
+  const best = evA >= evB ? a : b;
+  const worse = evA >= evB ? b : a;
+  return Math.random() < followRate() ? best : worse;
+}
+
+const DIE_P = { 2: 1 / 15, 3: 2 / 15, 4: 3 / 15, 5: 4 / 15, 6: 5 / 15 };
+const CHIP_CAP = 16;
+
+function cpuChoose(special, die) {
+  const tree = new Map();
+  const computing = new Set();
+
+  function cap(n) { return Math.max(0, Math.min(CHIP_CAP, n)); }
+
+  function gapBias(matchDelta) {
+    const gap = score.cpu - score.you;
+    return matchDelta + 0.1 * Math.tanh((gap + matchDelta) / 2800) * 220;
+  }
+
+  function rollEV(p, cy, cc) {
+    const k = p + "," + cy + "," + cc;
+    if (tree.has(k)) return tree.get(k);
+    if (computing.has(k)) return 0;
+    computing.add(k);
+    let cpuSide = 0, youSide = 0;
+    for (let d = 2; d <= 6; d++) {
+      const pr = DIE_P[d];
+      cpuSide += pr * cpuActEV(p, cy, cc, d);
+      youSide += pr * youActEV(p, cy, cc, d);
+    }
+    const v = 0.5 * cpuSide + 0.5 * youSide;
+    computing.delete(k);
+    tree.set(k, v);
+    return v;
+  }
+
+  function cpuActEV(p, cy, cc, d) {
+    if (d === 2) {
+      const evGoal = cc * 2 * CHIP_PT;
+      const evSteal = (cy === 0 && cc === 0) ? evGoal : rollEV(p, 0, cap(cc + cy));
+      return Math.max(evGoal, evSteal);
+    }
+    const evMove = (p + 1 >= 6) ? cc * d * CHIP_PT : rollEV(p + 1, cy, cc);
+    const evChip = rollEV(p, cy, cap(cc + 1));
+    return Math.max(evMove, evChip);
+  }
+
+  function youActEV(p, cy, cc, d) {
+    if (d === 2) {
+      const evGoal = -cy * 2 * CHIP_PT;
+      const evSteal = (cy === 0 && cc === 0) ? evGoal : rollEV(p, cap(cy + cc), 0);
+      return Math.min(evGoal, evSteal);
+    }
+    const evMove = (p - 1 <= 0) ? -cy * d * CHIP_PT : rollEV(p - 1, cy, cc);
+    const evChip = rollEV(p, cap(cy + 1), cc);
+    return Math.min(evMove, evChip);
+  }
+
+  const p0 = pos, cy = cap(chips.you), cc = cap(chips.cpu);
+  if (special || die === 2) {
+    const evGoal = gapBias(cc * 2 * CHIP_PT);
+    const evSteal = gapBias(cy + cc === cc ? cc * 2 * CHIP_PT : rollEV(p0, 0, cap(cc + cy)));
+    return pickByEV("goal", evGoal, "steal", evSteal);
+  }
+  const evMove = gapBias((p0 + 1 >= 6) ? cc * die * CHIP_PT : rollEV(p0 + 1, cy, cc));
+  const evChip = gapBias(rollEV(p0, cy, cap(cc + 1)));
+  return pickByEV("move", evMove, "chip", evChip);
+}
+
+let rollVals = { you: 0, cpu: 0 };
+let rollingWho = null;
+function rollDice() { rollMine(netPvp ? netMe : YOU); }
+async function rollMine(who) {
+  if (over || pending || rollingWho) return;
+  if (rollVals[who]) return;
+  if (vsCpu && who === CPU && !rollVals.you) return;
+  if (netPvp && who !== netMe) return;
+  rollingWho = who;
+  if (!rollVals.you && !rollVals.cpu) turn += 1;
+  setRolling(true);
+  sfxRoll();
+  startTumble(who);
+  await new Promise(function(r) { setTimeout(r, 620); });
+  const n = d6();
+  stopTumble(who, n);
+  rollVals[who] = n;
+  rollingWho = null;
+  setRolling(true);
+  if (netPvp) sendNet({type:"roll",who:who,n:n});
+  paintWinRate();
+  if (vsCpu && who === YOU && !rollVals.cpu) {
+    setTimeout(function() { rollMine(CPU); }, 400);
+    return;
+  }
+  if (netPvp && !(rollVals.you && rollVals.cpu)) {
+    setActions("");
+    return;
+  }
+  if (rollVals.you && rollVals.cpu) resolveRolls();
+}
+async function resolveRolls() {
+  const youDie = rollVals.you, cpuDie = rollVals.cpu;
+  log("第" + match + "試合-" + turn + "  " + youName() + youDie + " vs " + foeName() + cpuDie);
+  if (youDie === cpuDie) {
+    rollVals = { you: 0, cpu: 0 };
+    setActions('<button onclick="rollDice()">もう一度振る</button>');
+    paintWinRate();
+    return;
+  }
+  recGames += 1; matchGames += 1;
+  const iWin = (netPvp && netMe===CPU) ? (cpuDie > youDie) : (youDie > cpuDie);
+  if (iWin) { recWins += 1; matchWins += 1; }
+  paintWinRate();
+  setRolling(false);
+  if (youDie > cpuDie) { startChoice(YOU, youDie); return; }
+  if (!vsCpu || netPvp) { startChoice(CPU, cpuDie); return; }
+  if (cpuDie === 2) flashLucky(CPU);
+  setActions('<button disabled>考え中…</button>', CPU);
+  await new Promise(function(r) { setTimeout(r, cpuDie === 2 ? 900 : 550); });
+  runAction(CPU, cpuChoose(cpuDie === 2, cpuDie), cpuDie);
+}
+
+function isSeriesOver() {
+  return (matchLimit > 0 && match >= matchLimit) || lastRequested;
+}
+function markLast() {
+  if (matchLimit) return;
+  lastRequested = true;
+  renderRound();
+  setMsg("この試合が最後");
+}
+function showSeriesResult() {
+  const dy = score.you - score.cpu;
+  $("ovTitle").textContent = "結果";
+  const art = $("scoreArt");
+  art.innerHTML = "";
+  if (dy === 0) {
+    $("ovFormula").textContent = "引き分け";
+    $("ovPts").textContent = "+0";
+  } else {
+    const winner = dy > 0 ? YOU : CPU;
+    const chip = document.createElement("div");
+    chip.className = "mini-chip " + winner;
+    chip.style.position = "relative";
+    chip.style.width = "64px";
+    chip.style.height = "64px";
+    art.appendChild(chip);
+    $("ovFormula").textContent = (dy > 0 ? youName() : foeName()) + "の勝ち";
+    $("ovPts").textContent = "+" + String(Math.abs(dy));
+  }
+  $("ovBtns").innerHTML = '<button onclick="askNext()">もう1度</button><button class="alt" onclick="showMode()">やめる</button>';
+  $("ovBtns").style.display = "flex";
+}
+function askNext(){
+  if(!netPvp){ nextRound(); return; }
+  nextReady[netMe]=true;
+  sendNet({type:"next",who:netMe});
+  const b=$("ovBtns");
+  if(b) b.innerHTML='<button disabled>相手待ち</button><button class="alt" onclick="showMode()">やめる</button>';
+  if(nextReady.you && nextReady.cpu){ nextReady={you:false,cpu:false}; nextRound(); }
+}
+function nextRound() {
+  $("overlay").classList.remove("show");
+  match += 1;
+  pos = 3; chips = { you: 1, cpu: 1 }; matchWins=0; matchGames=0;
+  ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){const e=$(id); if(e) e.innerHTML="";});
+  over = false; busy = false; turn = 0; pending = null;
+  rollVals = { you: 0, cpu: 0 }; rollingWho = null; goalWait=null; goalStopDie=null;
+  $("youDie").classList.remove("show"); $("cpuDie").classList.remove("show");
+  setMsg("第" + match + "試合。ポイントは持ち越し");
+  setActions('<button onclick="rollDice()">サイコロを振る</button>');
+  renderBoard();
+  parkDice();
+  log("—— 第" + match + "試合開始（" + youName() + " " + fmtDiff(score.you-score.cpu) + " / " + foeName() + " " + fmtDiff(score.cpu-score.you) + "）");
+}
+function hubSave(game,n){try{const o=JSON.parse(localStorage.getItem("hubPts")||"{}");o[game]=n|0;localStorage.setItem("hubPts",JSON.stringify(o));}catch(e){}}
+function saveDiceHub(){const mine=netPvp?netMe:YOU;const opp=mine===YOU?CPU:YOU;hubSave("dice",(score[mine]||0)-(score[opp]||0))}
+addEventListener("pagehide",saveDiceHub);
+function showMode() {
+  saveDiceHub();
+  try{syncChatVis()}catch(e){}
+  $("overlay").classList.remove("show");
+  $("restartOverlay").classList.remove("show");
+  $("lengthOverlay").classList.remove("show");
+  $("modeOverlay").classList.remove("show");
+  $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){}
+}
+
+function setRoomMsg(s){ const el=$("roomSt"); if(el) el.textContent=s; }
+function backRoom(){ $("shellRoom").classList.remove("on"); $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){} try{if(netPeer)netPeer.destroy()}catch(e){} }
+function pid(c){return "dpush"+[...c.toLowerCase()].map(ch=>ch.codePointAt(0).toString(36)).join("").slice(0,28)}
+function sendNet(m){ try{ if(netConn&&netConn.open) netConn.send(m); }catch(e){} }
+function onNet(m){
+  if(!m||!m.type) return;
+  if(m.type==="hello"){ setRoomMsg("相手が入室した"); startNetMatch(); return; }
+  if(m.type==="start"){ $("shellRoom").classList.remove("on"); startMode(false,"normal"); return; }
+  if(m.type==="roll"){
+    const who=m.who; const n=m.n;
+    if(rollVals[who]) return;
+    startTumble(who);
+    setTimeout(function(){ stopTumble(who,n); rollVals[who]=n; if(rollVals.you&&rollVals.cpu) resolveRolls(); },620);
+    return;
+  }
+  if(m.type==="act"){
+    if(pending) runAction(m.who, m.act, m.die);
+    return;
+  }
+  if(m.type==="goalStop"){
+    if(goalWait){ const fn=goalWait; goalWait=null; fn(); }
+    else goalStopDie=m.die;
+    return;
+  }
+  if(m.type==="chat"){ showBubble(m.text||"", false); return; }
+  if(m.type==="next"){
+    if(m.who) nextReady[m.who]=true;
+    if(nextReady.you && nextReady.cpu){ nextReady={you:false,cpu:false}; nextRound(); }
+    else {
+      const b=$("ovBtns");
+      if(b && nextReady[netMe]) b.innerHTML='<button disabled>相手待ち</button><button class="alt" onclick="showMode()">やめる</button>';
+    }
+    return;
+  }
+}
+function bootRoom(host,code){
+  setRoomMsg("接続中…");
+  const opts={host:"0.peerjs.com",port:443,path:"/",secure:true,config:{iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]}};
+  try{if(netPeer)netPeer.destroy()}catch(e){}
+  const peer=new Peer(host?pid(code):undefined,opts);
+  netPeer=peer; netHost=host; netMe=host?"you":"cpu"; netPvp=true;
+  peer.on("error",e=>{
+    const ty=e&&e.type?e.type:String(e);
+    if(ty==="unavailable-id") setRoomMsg("その合言葉は使用中");
+    else if(ty==="peer-unavailable") setRoomMsg("その部屋はまだない");
+    else setRoomMsg("エラー "+ty);
+  });
+  peer.on("open",()=>{
+    if(host){
+      setRoomMsg("合言葉 "+code+" で待機中");
+      peer.on("connection",conn=>{
+        netConn=conn; conn.on("data",onNet);
+        conn.on("open",()=>{ setRoomMsg("相手が入室した"); });
+      });
+    } else {
+      let tries=0;
+      const tryJoin=function(){
+        tries++;
+        setRoomMsg(tries>1?("入室を再試行中… "+tries):"部屋に接続中…");
+        const conn=peer.connect(pid(code),{reliable:true});
+        netConn=conn; conn.on("data",onNet);
+        conn.on("open",()=>{ sendNet({type:"hello"}); setRoomMsg("接続した"); $("shellRoom").classList.remove("on"); startMode(false,"normal"); });
+        conn.on("error",function(){ if(tries<8) setTimeout(tryJoin,700); else setRoomMsg("入室できない。先に部屋を作っているか確認して"); });
+      };
+      tryJoin();
+    }
+  });
+}
+function startNetMatch(){
+  sendNet({type:"start"});
+  $("shellRoom").classList.remove("on");
+  startMode(false,"normal");
+}
+
+function showBubble(text, mine){
+  let w=$("bubbles");
+  if(!w){ w=document.createElement("div"); w.id="bubbles"; document.body.appendChild(w); }
+  if(!text) return;
+  const b=document.createElement("div");
+  b.className="bubble "+(mine?"me":"foe");
+  b.textContent=text;
+  w.appendChild(b);
+  setTimeout(()=>{ if(b.parentNode)b.parentNode.removeChild(b); }, 2800);
+}
+function ensureChatDom(){
+  if(!$("chatBtn")){
+    const b=document.createElement("button"); b.id="chatBtn"; b.type="button"; b.textContent="チャット"; document.body.appendChild(b);
+  }
+  if(!$("chatPanel")){
+    const pan=document.createElement("div"); pan.id="chatPanel";
+    pan.innerHTML='<input id="chatIn" maxlength="40" placeholder="メッセージ"/><div class="row"><button type="button" id="chatClose">閉じる</button><button type="button" id="chatSend">送信</button></div>';
+    document.body.appendChild(pan);
+  }
+  if(!$("bubbles")){
+    const w=document.createElement("div"); w.id="bubbles"; document.body.appendChild(w);
+  }
+}
+
+function syncChatVis(){
+  const title=document.querySelector("#shellMode.on,#shellRoom.on,#shellRules.on,#mode.on,#room.on,#rules.on,#series.on,#rate.on");
+  const play=document.querySelector("#app.on,#game.on,section#game.on,#app.app");
+  const on=!title && !!play;
+  const b=$("chatBtn"), pan=$("chatPanel");
+  if(b) b.style.display=on?"block":"none";
+  if(pan && !on) pan.classList.remove("on");
+}
+
+function bootChat(sendFn){
+  ensureChatDom();
+  syncChatVis();
+  
+  const btn=$("chatBtn"), pan=$("chatPanel"), inp=$("chatIn"), sendB=$("chatSend");
+  btn.onclick=function(e){ e.preventDefault(); e.stopPropagation(); pan.classList.toggle("on"); if(pan.classList.contains("on")) setTimeout(()=>inp&&inp.focus(),50); };
+  function go(){
+    const t=(inp.value||"").trim(); if(!t) return;
+    inp.value=""; pan.classList.remove("on");
+    showBubble(t,true);
+    try{ sendFn && sendFn(t); }catch(e){}
+  }
+  sendB.onclick=function(e){ e.preventDefault(); go(); };
+  const clo=$("chatClose");
+  if(clo) clo.onclick=function(e){ e.preventDefault(); pan.classList.remove("on"); };
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } });
+}
+
+bootChat(function(text){ sendNet({type:"chat",text:text}); });
+function makeRoom(){
+  const c=($("roomCode").value||"").trim().replace(/\s+/g,"");
+  if([...c].length<3){ setRoomMsg("3文字以上"); return; }
+  bootRoom(true,c);
+}
+function joinRoom(){
+  const c=($("roomCode").value||"").trim().replace(/\s+/g,"");
+  if([...c].length<3){ setRoomMsg("3文字以上"); return; }
+  bootRoom(false,c);
+}
+window.addEventListener("resize", function(){ try{parkDice()}catch(e){} });
+function pickMode(cpu){
+  $("shellMode").classList.remove("on"); try{syncChatVis()}catch(e){}
+  if(!cpu){ $("shellRoom").classList.add("on"); return; }
+  netPvp=false; netMe="you"; startMode(true,'normal');
+}
+function showShellRules(){ $("shellMode").classList.remove("on"); try{syncChatVis()}catch(e){} $("shellRules").classList.add("on"); }
+function hideShellRules(){ $("shellRules").classList.remove("on"); $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){} }
+function startMode(cpu, level) {
+  vsCpu = netPvp ? false : cpu;
+  cpuLevel = level || "normal";
+  $("modeOverlay").classList.remove("show");
+  $("restartOverlay").classList.remove("show");
+  $("lengthOverlay").classList.remove("show");
+  startSeries(0);
+  setTimeout(function(){ renderBoard(); parkDice(); },80);
+  setTimeout(function(){ renderBoard(); parkDice(); },300);
+}
+function startSeries(limit) {
+  if(netPvp) vsCpu=false;
+  matchLimit = limit || 0;
+  lastRequested = false;
+  refreshLabels();
+  $("lengthOverlay").classList.remove("show");
+  $("modeOverlay").classList.remove("show");
+  $("overlay").classList.remove("show");
+  $("restartOverlay").classList.remove("show");
+  score = { you: 0, cpu: 0 };
+  recWins = 0; recGames = 0; matchWins = 0; matchGames = 0;
+  match = 0;
+  $("log").innerHTML = "";
+  paintRollFaces();
+  nextRound();
+  setTimeout(parkDice,50);
+}
+function resetAll() {
+  $("overlay").classList.remove("show");
+  showMode();
+}
+function showRestart() {
+  $("restartOverlay").classList.add("show");
+}
+function hideRestart() {
+  $("restartOverlay").classList.remove("show");
+}
+function retryMatch() {
+  hideRestart();
+  $("overlay").classList.remove("show");
+  cancelAnimationFrame(rafId);
+  pos = 3; chips = { you: 1, cpu: 1 }; matchWins=0; matchGames=0;
+  ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){const e=$(id); if(e) e.innerHTML="";});
+  over = false; busy = false; turn = 0; pending = null;
+  $("youDie").classList.remove("show"); $("cpuDie").classList.remove("show");
+  setMsg("この勝負をやり直した");
+  setActions('<button onclick="rollDice()">サイコロを振る</button>');
+  renderBoard();
+  log("—— 今の勝負をやり直し（point持ち越し）");
+}
+function backToMode() {
+  hideRestart();
+  cancelAnimationFrame(rafId);
+  over = false; busy = false; pending = null;
+  showMode();
+}
+
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  navigator.serviceWorker.register("./sw.js").catch(function() {});
+}
+</script>
+
+<button id="chatBtn" type="button">チャット</button>
+<div id="chatPanel"><input id="chatIn" maxlength="40" placeholder="メッセージ"/><div class="row"><button type="button" id="chatSend">送信</button></div></div>
+<div id="bubbles"></div>
+
+</body>
+</html>
