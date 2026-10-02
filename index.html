@@ -7,9 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="7マス" />
-  <link rel="manifest" href="./manifest.webmanifest?_ship=zde69vj" />
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png?_ship=zde69vj" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./pwa-192.png?_ship=zde69vj" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -1555,13 +1552,8 @@ function backToMode() {
   showMode();
 }
 
-if ("serviceWorker" in navigator && location.protocol !== "file:") {
-  navigator.serviceWorker.register("./sw.js").catch(function() {});
-}
 </script>
 
-<button id="chatBtn" type="button">チャット</button>
-<div id="chatPanel"><input id="chatIn" maxlength="40" placeholder="メッセージ"/><div class="row"><button type="button" id="chatSend">送信</button></div></div>
 <div id="bubbles"></div>
 
 </body>
