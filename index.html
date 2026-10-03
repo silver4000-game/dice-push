@@ -528,6 +528,7 @@ let vsCpu = true;
 let netPvp=false, netHost=false, netMe="you", netPeer=null, netConn=null;
 let recWins=0, recGames=0, matchWins=0, matchGames=0;
 let goalWait=null, goalStopDie=null;
+let netEpoch=0, netDead=false;
 let nextReady={you:false,cpu:false};
 let cpuLevel = "normal";
 let matchLimit = 0;
@@ -631,6 +632,7 @@ let score = { you: 0, cpu: 0 };
 let match = 1;
 let busy = false, over = false, turn = 0;
 let pending = null;
+let queuedAct = null;
 let dicePhys = null;
 let rafId = 0;
 
@@ -667,8 +669,10 @@ function paintActs(){
   keys.forEach(function(k){const el=box.querySelector('[data-act="'+k+'"]'); if(el) el.classList.add("on")});
 }
 function renderScores() {
-  const dy = score.you - score.cpu;
-  const dc = score.cpu - score.you;
+  const mine = myView();
+  const opp = mine===YOU ? CPU : YOU;
+  const dy = score[mine] - score[opp];
+  const dc = score[opp] - score[mine];
   $("youScore").innerHTML = '<span class="val ' + (dy>0?"plus":dy<0?"minus":"") + '">' + fmtDiff(dy) + '</span>';
   $("cpuScore").innerHTML = '<span class="lbl">point</span><span class="val ' + (dc>0?"plus":dc<0?"minus":"") + '">' + fmtDiff(dc) + '</span>';
 }
@@ -1023,9 +1027,11 @@ async function celebrateGoal(who, die) {
     await new Promise(function(r) { setTimeout(r, 900); });
   }
   clearInterval(spin);
+  if (netDead || !ov) return;
   ov.classList.remove("rolling", "clickable");
   paintDie(ov, die);
   await new Promise(function(r) { setTimeout(r, 280); });
+  if (netDead) return;
   const gained = n * die * CHIP_PT;
   art.innerHTML = "";
   art.style.alignItems = "center";
@@ -1047,11 +1053,13 @@ async function celebrateGoal(who, die) {
   score[who] += gained;
   renderScores();
   paintWinRate();
-  const mineGot = who === YOU ? gained : -gained;
-  const life = score.you - score.cpu;
+  const mine = myView();
+  const oppSeat = mine===YOU ? CPU : YOU;
+  const mineGot = who === mine ? gained : -gained;
+  const life = score[mine] - score[oppSeat];
   const fmt=function(n){return n>0?"+"+n:n===0?"±0":String(n)};
   const col=function(n){return n>0?"#6aa8ff":n<0?"#ff5a6a":"#e8c36a"};
-  $("ovTitle").textContent = who === YOU ? "Win" : "Lose"; $("ovTitle").style.fontSize="44px";
+  $("ovTitle").textContent = who === mine ? "Win" : "Lose"; $("ovTitle").style.fontSize="44px";
   $("ovFormula").innerHTML = '<div style="font-size:18px;font-weight:800;color:#e8c36a">今回</div>';
   $("ovPts").innerHTML = '<div style="color:'+col(mineGot)+';font-size:36px;font-weight:900">'+fmt(mineGot)+'</div><div style="font-size:18px;font-weight:800;color:#e8c36a;margin-top:10px">今までの通算</div><div style="color:'+col(life)+';font-size:36px;font-weight:900">'+fmt(life)+'</div>';
   $("ovBtns").innerHTML = '<button onclick="askNext()">もう1度</button><button class="alt" onclick="showMode()">やめる</button>';
@@ -1071,6 +1079,7 @@ function afterAction(who, action, die) {
   };
   log(name + "：" + labels[action]);
   pending = null;
+  queuedAct = null;
   rollVals = { you: 0, cpu: 0 };
   rollingWho = null;
   ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){
@@ -1250,6 +1259,7 @@ async function resolveRolls() {
   log("第" + match + "試合-" + turn + "  " + youName() + youDie + " vs " + foeName() + cpuDie);
   if (youDie === cpuDie) {
     rollVals = { you: 0, cpu: 0 };
+    queuedAct = null;
     setActions('<button onclick="rollDice()">もう一度振る</button>');
     paintWinRate();
     return;
@@ -1259,8 +1269,16 @@ async function resolveRolls() {
   if (iWin) { recWins += 1; matchWins += 1; }
   paintWinRate();
   setRolling(false);
-  if (youDie > cpuDie) { startChoice(YOU, youDie); return; }
-  if (!vsCpu || netPvp) { startChoice(CPU, cpuDie); return; }
+  if (youDie > cpuDie) {
+    if (queuedAct && queuedAct.who === YOU) { const q = queuedAct; queuedAct = null; runAction(q.who, q.act, q.die); return; }
+    queuedAct = null;
+    startChoice(YOU, youDie); return;
+  }
+  if (!vsCpu || netPvp) {
+    if (queuedAct && queuedAct.who === CPU) { const q = queuedAct; queuedAct = null; runAction(q.who, q.act, q.die); return; }
+    queuedAct = null;
+    startChoice(CPU, cpuDie); return;
+  }
   if (cpuDie === 2) flashLucky(CPU);
   setActions('<button disabled>考え中…</button>', CPU);
   await new Promise(function(r) { setTimeout(r, cpuDie === 2 ? 900 : 550); });
@@ -1311,7 +1329,7 @@ function nextRound() {
   match += 1;
   pos = 3; chips = { you: 1, cpu: 1 }; matchWins=0; matchGames=0;
   ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){const e=$(id); if(e) e.innerHTML="";});
-  over = false; busy = false; turn = 0; pending = null;
+  over = false; busy = false; turn = 0; pending = null; queuedAct = null;
   rollVals = { you: 0, cpu: 0 }; rollingWho = null; goalWait=null; goalStopDie=null;
   $("youDie").classList.remove("show"); $("cpuDie").classList.remove("show");
   setMsg("第" + match + "試合。ポイントは持ち越し");
@@ -1322,9 +1340,10 @@ function nextRound() {
 }
 function hubSave(game,n){try{const o=JSON.parse(localStorage.getItem("hubPts")||"{}");o[game]=n|0;localStorage.setItem("hubPts",JSON.stringify(o));}catch(e){}}
 function saveDiceHub(){const mine=netPvp?netMe:YOU;const opp=mine===YOU?CPU:YOU;hubSave("dice",(score[mine]||0)-(score[opp]||0))}
-addEventListener("pagehide",saveDiceHub);
+addEventListener("pagehide",function(){ try{sendNet({type:"bye"})}catch(e){} saveDiceHub(); });
 function showMode() {
   saveDiceHub();
+  if(netPvp||netConn||netPeer) hangupNet(true);
   try{syncChatVis()}catch(e){}
   $("overlay").classList.remove("show");
   $("restartOverlay").classList.remove("show");
@@ -1334,11 +1353,53 @@ function showMode() {
 }
 
 function setRoomMsg(s){ const el=$("roomSt"); if(el) el.textContent=s; }
-function backRoom(){ $("shellRoom").classList.remove("on"); $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){} try{if(netPeer)netPeer.destroy()}catch(e){} }
+function backRoom(){ $("shellRoom").classList.remove("on"); $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){} hangupNet(true); }
 function pid(c){return "dpush"+[...c.toLowerCase()].map(ch=>ch.codePointAt(0).toString(36)).join("").slice(0,28)}
 function sendNet(m){ try{ if(netConn&&netConn.open) netConn.send(m); }catch(e){} }
+function myView(){ return netMe===CPU ? CPU : YOU; }
+function hangupNet(tell){
+  netEpoch++;
+  try{ if(tell) sendNet({type:"bye"}); }catch(e){}
+  const c=netConn, p=netPeer;
+  netConn=null; netPeer=null; netPvp=false;
+  try{ if(c) c.close(); }catch(e){}
+  try{ if(p) p.destroy(); }catch(e){}
+}
+function oppGone(){
+  if(netDead) return;
+  netDead=true;
+  netEpoch++;
+  queuedAct=null;
+  if(goalWait){ const fn=goalWait; goalWait=null; try{fn();}catch(e){} }
+  const c=netConn, p=netPeer;
+  netConn=null; netPeer=null; netPvp=false;
+  try{ if(c) c.close(); }catch(e){}
+  try{ if(p) p.destroy(); }catch(e){}
+  const room=$("shellRoom");
+  if(room && room.classList.contains("on")){ setRoomMsg("相手が切断しました"); return; }
+  over=true; pending=null; busy=false;
+  setMsg("相手が切断しました");
+  setActions("");
+  $("ovTitle").textContent="切断";
+  $("ovTitle").style.fontSize="32px";
+  const art=$("scoreArt"); if(art) art.innerHTML="";
+  $("ovFormula").textContent="相手との接続が切れました";
+  $("ovPts").textContent="";
+  $("ovBtns").innerHTML='<button onclick="showMode()">モード選択</button>';
+  $("ovBtns").style.display="flex";
+  $("overlay").classList.add("show");
+}
+function watchConn(conn){
+  const epoch=netEpoch;
+  let opened=false;
+  netConn=conn;
+  conn.on("data", onNet);
+  conn.on("open", function(){ opened=true; });
+  conn.on("close", function(){ if(epoch!==netEpoch || netDead || !opened || netConn!==conn) return; oppGone(); });
+}
 function onNet(m){
   if(!m||!m.type) return;
+  if(m.type==="bye"){ oppGone(); return; }
   if(m.type==="hello"){ setRoomMsg("相手が入室した"); startNetMatch(); return; }
   if(m.type==="start"){ $("shellRoom").classList.remove("on"); startMode(false,"normal"); return; }
   if(m.type==="roll"){
@@ -1349,7 +1410,8 @@ function onNet(m){
     return;
   }
   if(m.type==="act"){
-    if(pending) runAction(m.who, m.act, m.die);
+    if(pending){ queuedAct=null; runAction(m.who, m.act, m.die); }
+    else queuedAct={who:m.who, act:m.act, die:m.die};
     return;
   }
   if(m.type==="goalStop"){
@@ -1370,8 +1432,12 @@ function onNet(m){
 }
 function bootRoom(host,code){
   setRoomMsg("接続中…");
+  netEpoch++;
+  netDead=false;
   const opts={host:"0.peerjs.com",port:443,path:"/",secure:true,config:{iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]}};
+  try{if(netConn)netConn.close()}catch(e){}
   try{if(netPeer)netPeer.destroy()}catch(e){}
+  netConn=null;
   const peer=new Peer(host?pid(code):undefined,opts);
   netPeer=peer; netHost=host; netMe=host?"you":"cpu"; netPvp=true;
   peer.on("error",e=>{
@@ -1384,7 +1450,7 @@ function bootRoom(host,code){
     if(host){
       setRoomMsg("合言葉 "+code+" で待機中");
       peer.on("connection",conn=>{
-        netConn=conn; conn.on("data",onNet);
+        watchConn(conn);
         conn.on("open",()=>{ setRoomMsg("相手が入室した"); });
       });
     } else {
@@ -1393,7 +1459,7 @@ function bootRoom(host,code){
         tries++;
         setRoomMsg(tries>1?("入室を再試行中… "+tries):"部屋に接続中…");
         const conn=peer.connect(pid(code),{reliable:true});
-        netConn=conn; conn.on("data",onNet);
+        watchConn(conn);
         conn.on("open",()=>{ sendNet({type:"hello"}); setRoomMsg("接続した"); $("shellRoom").classList.remove("on"); startMode(false,"normal"); });
         conn.on("error",function(){ if(tries<8) setTimeout(tryJoin,700); else setRoomMsg("入室できない。先に部屋を作っているか確認して"); });
       };
