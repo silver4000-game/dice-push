@@ -3,14 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!-- layout: safari-bar-lock-20261004 -->
+<meta name="dice-push-rev" content="20261004d-safari-lock">
+<script>
+(function(){
+  var nav=navigator, mm=window.matchMedia;
+  function q(s){return !!(mm&&mm.call(window,s).matches)}
+  var hs=nav.standalone===true||q('(display-mode: standalone)')||q('(display-mode: fullscreen)')||q('(display-mode: minimal-ui)');
+  if(!hs||!(nav.maxTouchPoints>0)) return;
+  var shortSide=Math.min(screen.width,screen.height);
+  var longSide=Math.max(screen.width,screen.height);
+  var portrait=window.innerHeight>=window.innerWidth;
+  var bar=(shortSide<520&&longSide>=812)?(portrait?83:50):(portrait?50:44);
+  document.documentElement.classList.add('no-bar');
+  document.documentElement.style.setProperty('--safari-bar', bar+'px');
+})();
+</script>
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261004d">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261004d">
   <meta name="theme-color" content="#1c4a2e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
   <style>
     :root {
       --bg: #10140f; --panel: #1b2418; --line: #33402e; --text: #eef3e8;
@@ -50,11 +66,30 @@
     .app {
       position: relative;
       height: 100dvh; height: 100%; width: 100%; margin: 0;
+
       display: grid;
       grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
       grid-template-rows: 1fr;
       padding: 8px; gap: 8px;
     }
+
+/* Home screen has no white Safari bar, so the viewport is taller than Safari.
+   Pin #app to the Safari-with-bar height. Extra space stays the page background.
+   --safari-bar: 83px on home-indicator iPhones, 50px on older phones. */
+html.no-bar #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
+html.no-bar .table{height:calc(100dvh - var(--safari-bar, 83px) - 16px);width:calc((100dvh - var(--safari-bar, 83px) - 16px) / 6.15)}
+html.no-bar #chatBtn{bottom:calc(58px + var(--safari-bar, 83px))}
+html.no-bar #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
+
+@media (display-mode: standalone) and (pointer: coarse),
+       (display-mode: fullscreen) and (pointer: coarse),
+       (display-mode: minimal-ui) and (pointer: coarse){
+  #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
+  .table{height:calc(100dvh - var(--safari-bar, 83px) - 16px);width:calc((100dvh - var(--safari-bar, 83px) - 16px) / 6.15)}
+  #chatBtn{bottom:calc(58px + var(--safari-bar, 83px))}
+  #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
+
+}
     header { display: none; }
     .seat { display: none !important; }
     .seat.home { grid-column: 3; grid-row: 1; align-self: end; justify-self: stretch; }
