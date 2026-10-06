@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- layout: safari-bar-lock-20261004 -->
-<meta name="dice-push-rev" content="20261007a-sfx-stop">
+<meta name="dice-push-rev" content="20261007b-ui-align">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -19,8 +19,8 @@
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007a">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007a">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007b">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007b">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -76,8 +76,8 @@
 html.no-bar #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
 html.no-bar .table{height:calc(100dvh - var(--safari-bar, 83px) - 16px);width:calc((100dvh - var(--safari-bar, 83px) - 16px) / 6.15)}
 html.no-bar #youScore,html.no-bar #btnRestart{bottom:calc(16px + var(--safari-bar, 83px))}
-html.no-bar #chatBtn{bottom:calc(58px + var(--safari-bar, 83px))}
-html.no-bar #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
+html.no-bar #chatBtn{bottom:calc(64px + var(--safari-bar, 83px))}
+html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 
 @media (display-mode: standalone) and (pointer: coarse),
        (display-mode: fullscreen) and (pointer: coarse),
@@ -85,8 +85,8 @@ html.no-bar #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
   #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
   .table{height:calc(100dvh - var(--safari-bar, 83px) - 16px);width:calc((100dvh - var(--safari-bar, 83px) - 16px) / 6.15)}
   #youScore,#btnRestart{bottom:calc(16px + var(--safari-bar, 83px))}
-  #chatBtn{bottom:calc(58px + var(--safari-bar, 83px))}
-  #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
+  #chatBtn{bottom:calc(64px + var(--safari-bar, 83px))}
+  #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 
 }
     header { display: none; }
@@ -347,12 +347,12 @@ html.no-bar #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
     #winRate .wr-row{display:flex;align-items:center;gap:6px}
     #winRate .wr-row>span:first-child{flex:0 0 auto}
     #winRate .wr-n{flex:1;text-align:center}
-    #btnRestart{position:fixed;right:10px;bottom:16px;z-index:25;min-height:40px;min-width:88px;width:auto;padding:8px 12px;font-size:13px;border:2px solid #f0d27a;background:linear-gradient(#4a3210,#2c1c08);color:#ffe9a8;border-radius:12px;font-weight:800}
+    #btnRestart{position:fixed;right:12px;bottom:16px;z-index:25;width:88px;min-width:88px;max-width:88px;min-height:46px;height:46px;padding:0;font-size:15px;border:2px solid #f0d27a;background:linear-gradient(#4a3210,#2c1c08);color:#ffe9a8;border-radius:12px;font-weight:800}
     #actHint{position:fixed;top:10px;right:10px;z-index:25;display:flex;flex-direction:column;gap:6px;background:transparent;min-width:0}
     #actHint div{color:#e8c36a;opacity:.32;font-size:13px;font-weight:800;line-height:1.2;text-align:center;border:2px solid #e8c36a;border-radius:10px;padding:6px 10px;background:#0a241ccc;min-width:72px}
     #actHint div.on{opacity:1;color:#f4ead0;border-color:#f0d27a}
     #youScore .lbl{display:none}#youScore .val{font-size:22px}
-    #youScore { position: fixed; left: 12px; bottom: 16px; transform:none; z-index: 26; min-width: 120px; padding: 8px 22px; border: 2px solid #e8c36a; border-radius: 14px; background: #0a241ccc; display:block !important; }
+    #youScore { position: fixed; left: 12px; bottom: 16px; transform:none; z-index: 26; min-width: 100px; padding: 8px 16px; border: 2px solid #e8c36a; border-radius: 14px; background: #0a241ccc; display:block !important; }
     .tdie { cursor: pointer; }
     .tdie.you { outline: 3px solid #3a8adf; outline-offset: 2px; }
     .tdie.cpu { outline: 3px solid #d03a44; outline-offset: 2px; }
@@ -362,7 +362,7 @@ html.no-bar #chatPanel{bottom:calc(108px + var(--safari-bar, 83px))}
   
 #chatBtn{position:fixed;z-index:80;width:88px;min-width:88px;max-width:88px;min-height:46px;height:46px;font-size:15px;font-weight:800;padding:0;border:2px solid #e8c36a;background:linear-gradient(#4a3210,#2c1c08);color:#e8c36a;border-radius:12px;display:none}
 /* chat-pos */
-#chatBtn{right:12px;bottom:58px;left:auto;top:auto}#chatPanel{right:12px;bottom:108px;left:auto;top:auto}
+#chatBtn{right:12px;bottom:64px;left:auto;top:auto}#chatPanel{right:12px;bottom:114px;left:auto;top:auto}
 #chatPanel{display:none;position:fixed;z-index:81;width:min(86vw,280px);background:#0a1810ee;border:2px solid #e8c36a;border-radius:12px;padding:8px}
 #chatPanel.on{display:block}
 #chatPanel input{width:100%;padding:8px;border-radius:8px;border:1px solid #e8c36a66;background:#0b160f;color:#fff;font-size:14px}
@@ -1089,7 +1089,7 @@ async function celebrateGoal(who, die) {
   const ov = $("ovRoll");
   if (ov && !canTap) ov.style.pointerEvents = "none";
   paintDie(ov, d6());
-  $("overlay").classList.add("show");
+  $("overlay").classList.add("show"); try{syncChatVis()}catch(e){}
   $("ovFormula").textContent = canTap ? "タップ" : "相手待ち";
   if(goalSpinIv!=null){ try{ clearInterval(goalSpinIv); }catch(e){} }
   goalSpinIv = setInterval(function() { if (ov) paintDie(ov, d6()); }, 80);
@@ -1421,7 +1421,7 @@ function askNext(){
   if(nextReady.you && nextReady.cpu){ nextReady={you:false,cpu:false}; nextRound(); }
 }
 function nextRound() {
-  $("overlay").classList.remove("show");
+  $("overlay").classList.remove("show"); try{syncChatVis()}catch(e){}
   match += 1;
   pos = 3; chips = { you: 1, cpu: 1 }; matchWins=0; matchGames=0;
   ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){const e=$(id); if(e) e.innerHTML="";});
@@ -1484,7 +1484,7 @@ function oppGone(){
   $("ovPts").textContent="";
   $("ovBtns").innerHTML='<button onclick="showMode()">モード選択</button>';
   $("ovBtns").style.display="flex";
-  $("overlay").classList.add("show");
+  $("overlay").classList.add("show"); try{syncChatVis()}catch(e){}
 }
 function watchConn(conn){
   const epoch=netEpoch;
@@ -1610,7 +1610,8 @@ function ensureChatDom(){
 function syncChatVis(){
   const title=document.querySelector("#shellMode.on,#shellRoom.on,#shellRules.on,#mode.on,#room.on,#rules.on,#series.on,#rate.on");
   const play=document.querySelector("#app.on,#game.on,section#game.on,#app.app");
-  const on=!title && !!play;
+  const result=document.querySelector("#overlay.show");
+  const on=!title && !!play && !result;
   const b=$("chatBtn"), pan=$("chatPanel");
   if(b) b.style.display=on?"block":"none";
   if(pan && !on) pan.classList.remove("on");
@@ -1700,7 +1701,7 @@ function hideRestart() {
 function retryMatch() {
   hardStopSounds();
   hideRestart();
-  $("overlay").classList.remove("show");
+  $("overlay").classList.remove("show"); try{syncChatVis()}catch(e){}
   cancelAnimationFrame(rafId);
   pos = 3; chips = { you: 1, cpu: 1 }; matchWins=0; matchGames=0;
   ["youStackFree","cpuStackFree","youStack","cpuStack"].forEach(function(id){const e=$(id); if(e) e.innerHTML="";});
