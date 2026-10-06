@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- layout: safari-bar-lock-20261004 -->
-<meta name="dice-push-rev" content="20261005c-safari-lock">
+<meta name="dice-push-rev" content="20261007a-sfx-stop">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -19,8 +19,8 @@
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261004d">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261004d">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007a">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007a">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -568,8 +568,64 @@ let cpuLevel = "normal";
 let matchLimit = 0;
 let lastRequested = false;
 let ac = null;
+let gameGen = 0;
+const gameTimers = new Set();
+let goalSpinIv = null;
+function bumpGameGen(){ gameGen++; }
+function alive(g){ return g === gameGen; }
+function clearGameTimers(){
+  gameTimers.forEach(function(id){
+    try{ clearTimeout(id); }catch(e){}
+    try{ clearInterval(id); }catch(e){}
+  });
+  gameTimers.clear();
+  if(goalSpinIv!=null){ try{ clearInterval(goalSpinIv); }catch(e){} goalSpinIv=null; }
+}
+function later(fn, ms){
+  const g = gameGen;
+  const id = setTimeout(function(){
+    gameTimers.delete(id);
+    if(!alive(g)) return;
+    try{ fn(); }catch(e){}
+  }, ms);
+  gameTimers.add(id);
+  return id;
+}
+function sleep(ms){
+  const g = gameGen;
+  return new Promise(function(r){
+    setTimeout(function(){ r(alive(g)); }, ms);
+  });
+}
+function stopAudio(){
+  try{
+    const old = ac;
+    ac = null;
+    if(old){
+      try{ if(old.state !== "closed") old.suspend(); }catch(e){}
+      try{ if(old.state !== "closed") old.close(); }catch(e){}
+    }
+  }catch(e){}
+}
+function stopDieIvs(){
+  ["youDie","cpuDie","ovRoll"].forEach(function(id){
+    const el = $(id);
+    if(el && el._iv){ try{ clearInterval(el._iv); }catch(e){} el._iv=null; }
+  });
+  try{ cancelAnimationFrame(rafId); }catch(e){}
+  rafId = 0;
+}
+function hardStopSounds(){
+  bumpGameGen();
+  clearGameTimers();
+  stopDieIvs();
+  stopAudio();
+  if(goalWait){ const fn=goalWait; goalWait=null; try{fn();}catch(e){} }
+  busy = false;
+  rollingWho = null;
+}
 function getAC() {
-  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (!ac || ac.state === "closed") ac = new (window.AudioContext || window.webkitAudioContext)();
   if (ac.state === "suspended") ac.resume();
   return ac;
 }
@@ -836,15 +892,16 @@ function dieEl(who){
 function startTumble(who) {
   const el = dieEl(who); if(!el)return;
   el.classList.add("show","rolling");
-  if(el._iv) clearInterval(el._iv);
+  if(el._iv){ clearInterval(el._iv); gameTimers.delete(el._iv); el._iv=null; }
   let k=0;
-  el._iv=setInterval(function(){ paintDie(el, d6()); if(++k>=8){clearInterval(el._iv);el._iv=null} },60);
+  el._iv=setInterval(function(){ paintDie(el, d6()); if(++k>=8){clearInterval(el._iv);gameTimers.delete(el._iv);el._iv=null} },60);
+  gameTimers.add(el._iv);
 }
 function stopTumble(who, n) {
   cancelAnimationFrame(rafId);
   const el = dieEl(who);
   if(!el)return;
-  if(el._iv) clearInterval(el._iv);
+  if(el._iv){ clearInterval(el._iv); gameTimers.delete(el._iv); el._iv=null; }
   el.classList.remove("rolling");
   paintDie(el, n);
   if (dicePhys && dicePhys[0] && dicePhys[0].el === el) {
@@ -1034,7 +1091,9 @@ async function celebrateGoal(who, die) {
   paintDie(ov, d6());
   $("overlay").classList.add("show");
   $("ovFormula").textContent = canTap ? "タップ" : "相手待ち";
-  const spin = setInterval(function() { if (ov) paintDie(ov, d6()); }, 80);
+  if(goalSpinIv!=null){ try{ clearInterval(goalSpinIv); }catch(e){} }
+  goalSpinIv = setInterval(function() { if (ov) paintDie(ov, d6()); }, 80);
+  gameTimers.add(goalSpinIv);
   if (canTap) {
     await new Promise(function(resolve) {
       function stop(e) {
@@ -1051,20 +1110,20 @@ async function celebrateGoal(who, die) {
     if (goalStopDie==null) {
       await Promise.race([
         new Promise(function(resolve){ goalWait=resolve; }),
-        new Promise(function(r){ setTimeout(r, 2500); })
+        sleep(2500)
       ]);
       goalWait=null; goalStopDie=null;
     } else {
       goalStopDie=null;
     }
   } else {
-    await new Promise(function(r) { setTimeout(r, 900); });
+    if(!(await sleep(900))) return;
   }
-  clearInterval(spin);
+  if(goalSpinIv!=null){ try{ clearInterval(goalSpinIv); }catch(e){} gameTimers.delete(goalSpinIv); goalSpinIv=null; }
   if (netDead || !ov) return;
   ov.classList.remove("rolling", "clickable");
   paintDie(ov, die);
-  await new Promise(function(r) { setTimeout(r, 280); });
+  if(!(await sleep(280))) return;
   if (netDead) return;
   const gained = n * die * CHIP_PT;
   art.innerHTML = "";
@@ -1158,7 +1217,7 @@ function flashLucky(who) {
   el.classList.add("lucky");
   $("luckyBanner").classList.add("show");
   $("table").classList.add("flash2");
-  setTimeout(function() {
+  later(function() {
     el.classList.remove("lucky");
     $("luckyBanner").classList.remove("show");
     $("table").classList.remove("flash2");
@@ -1265,12 +1324,14 @@ async function rollMine(who) {
   if (rollVals[who]) return;
   if (vsCpu && who === CPU && !rollVals.you) return;
   if (netPvp && who !== netMe) return;
+  const g = gameGen;
   rollingWho = who;
   if (!rollVals.you && !rollVals.cpu) turn += 1;
   setRolling(true);
   sfxRoll();
   startTumble(who);
-  await new Promise(function(r) { setTimeout(r, 620); });
+  if(!(await sleep(620))) { try{ stopTumble(who, rollVals[who]||1); }catch(e){} return; }
+  if(!alive(g) || over) return;
   const n = d6();
   stopTumble(who, n);
   rollVals[who] = n;
@@ -1279,7 +1340,7 @@ async function rollMine(who) {
   if (netPvp) sendNet({type:"roll",who:who,n:n});
   paintWinRate();
   if (vsCpu && who === YOU && !rollVals.cpu) {
-    setTimeout(function() { rollMine(CPU); }, 400);
+    later(function() { rollMine(CPU); }, 400);
     return;
   }
   if (netPvp && !(rollVals.you && rollVals.cpu)) {
@@ -1315,7 +1376,8 @@ async function resolveRolls() {
   }
   if (cpuDie === 2) flashLucky(CPU);
   setActions('<button disabled>考え中…</button>', CPU);
-  await new Promise(function(r) { setTimeout(r, cpuDie === 2 ? 900 : 550); });
+  if(!(await sleep(cpuDie === 2 ? 900 : 550))) return;
+  if(over) return;
   runAction(CPU, cpuChoose(cpuDie === 2, cpuDie), cpuDie);
 }
 
@@ -1376,6 +1438,7 @@ function hubSave(game,n){try{const o=JSON.parse(localStorage.getItem("hubPts")||
 function saveDiceHub(){const mine=netPvp?netMe:YOU;const opp=mine===YOU?CPU:YOU;hubSave("dice",(score[mine]||0)-(score[opp]||0))}
 addEventListener("pagehide",function(){ try{sendNet({type:"bye"})}catch(e){} saveDiceHub(); });
 function showMode() {
+  hardStopSounds();
   saveDiceHub();
   if(netPvp||netConn||netPeer) hangupNet(true);
   try{syncChatVis()}catch(e){}
@@ -1387,7 +1450,7 @@ function showMode() {
 }
 
 function setRoomMsg(s){ const el=$("roomSt"); if(el) el.textContent=s; }
-function backRoom(){ $("shellRoom").classList.remove("on"); $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){} hangupNet(true); }
+function backRoom(){ hardStopSounds(); $("shellRoom").classList.remove("on"); $("shellMode").classList.add("on"); try{syncChatVis()}catch(e){} hangupNet(true); }
 function pid(c){return "dpush"+[...c.toLowerCase()].map(ch=>ch.codePointAt(0).toString(36)).join("").slice(0,28)}
 function sendNet(m){ try{ if(netConn&&netConn.open) netConn.send(m); }catch(e){} }
 function myView(){ return netMe===CPU ? CPU : YOU; }
@@ -1440,7 +1503,7 @@ function onNet(m){
     const who=m.who; const n=m.n;
     if(rollVals[who]) return;
     startTumble(who);
-    setTimeout(function(){ stopTumble(who,n); rollVals[who]=n; if(rollVals.you&&rollVals.cpu) resolveRolls(); },620);
+    later(function(){ stopTumble(who,n); rollVals[who]=n; if(rollVals.you&&rollVals.cpu) resolveRolls(); },620);
     return;
   }
   if(m.type==="act"){
@@ -1635,6 +1698,7 @@ function hideRestart() {
   $("restartOverlay").classList.remove("show");
 }
 function retryMatch() {
+  hardStopSounds();
   hideRestart();
   $("overlay").classList.remove("show");
   cancelAnimationFrame(rafId);
