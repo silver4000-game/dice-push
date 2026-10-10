@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- layout: safari-bar-lock-20261004 -->
-<meta name="dice-push-rev" content="20261007b-ui-align">
+<meta name="dice-push-rev" content="20261011a-rules-illust">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -19,8 +19,8 @@
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007b">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007b">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261011a">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261011a">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -50,7 +50,31 @@
       background:repeating-conic-gradient(from 0deg,var(--ring) 0 12deg,var(--body) 12deg 24deg);
       box-shadow:inset 0 0 0 6px var(--ring),inset 0 0 0 9px var(--body),inset 0 0 0 11px var(--ring),0 2px 0 rgba(0,0,0,.35)}
     .hero-chip::after{content:"";position:absolute;inset:16px;border-radius:50%;background:var(--body);box-shadow:inset 0 0 0 2px var(--ring)}
-    #shellRules{justify-content:center;overflow:auto;padding:20px}
+    #shellRules{justify-content:flex-start;overflow:auto;-webkit-overflow-scrolling:touch;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));box-sizing:border-box}
+    #shellRules h1{margin:4px 0 6px;flex:none}#shellRules>button{margin-top:12px;flex:none}
+.ruleHead{margin:24px 0 6px;font-weight:900;font-size:15px;color:#e8c36a;text-align:center}
+.ruleSteps{margin:8px 0 12px}
+.ruleStep{display:flex;align-items:flex-start;gap:6px;margin:8px 0}
+.ruleNum{flex:none;font-weight:900;font-size:15px;color:#e8c36a;min-width:1.2em;line-height:1.55}
+.ruleStepBody{flex:1;min-width:0;line-height:1.55}
+.ruleRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;padding:8px;background:#0a181066;border-radius:12px;border:1px solid #e8c36a33}
+.ruleArt{flex:none;display:flex;flex-wrap:wrap;gap:4px;align-items:center;max-width:100%}
+.ruleTxt{flex:1;min-width:min(100%,140px);line-height:1.55;text-align:center}
+.ruleNo{color:#ff4d4d;font-weight:900}.ruleYes{color:#3ddc6a;font-weight:900}.ruleGold{color:#e8c36a;font-weight:900}
+.ruleArr{color:#e8c36a;font-weight:900;font-size:13px}
+.rDie{width:30px;height:30px;border-radius:7px;background:#f7f1e3;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:4px;box-sizing:border-box;box-shadow:inset 0 -2px 0 #0003}
+.rDie i{width:5px;height:5px;border-radius:50%;background:#1a1208;place-self:center}
+.rDie i.o{visibility:hidden}.rDie.lk{background:#ffe08a;box-shadow:0 0 8px #ffd34d}
+.rChip{width:24px;height:24px;border-radius:50%;background:#1d4e89;box-shadow:inset 0 0 0 3px #d9e7ff,inset 0 0 0 7px #1d4e89,inset 0 0 0 9px #d9e7ff;display:inline-block}
+.rChip.c{background:#8b1e28;box-shadow:inset 0 0 0 3px #ffd4d7,inset 0 0 0 7px #8b1e28,inset 0 0 0 9px #ffd4d7}
+.rTrack{display:flex;gap:2px}.rTrack b{width:18px;height:22px;border-radius:4px;background:#124a2c;border:1px solid #e8c36a44;display:flex;align-items:center;justify-content:center;font-size:11px}
+.rTrack b.g1{background:#1a3f66}.rTrack b.g2{background:#5a2026}.rTrack b.p::after{content:"";width:10px;height:10px;border-radius:50%;background:#e8c36a}
+.rCard{width:28px;height:38px;border-radius:5px;background:#f7f1e3;color:#1a1208;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;box-shadow:inset 0 -2px 0 #0002}
+.rCard.bk{background:repeating-linear-gradient(45deg,#2a5a7a,#2a5a7a 4px,#1d4060 4px,#1d4060 8px);border:1.5px solid #d9e7ff}
+.rSlots{display:flex;gap:3px}.rSlot{display:flex;flex-direction:column;align-items:center;gap:3px}
+.rLab{min-width:34px;padding:2px 3px;border-radius:5px;background:#0a1810;border:1px solid #e8c36a77;color:#e8c36a;font-weight:900;font-size:11px;text-align:center}
+.rLab.w{background:#e8c36a;color:#1a1208}
+
     #shellRules .rules-body{width:min(92vw,360px);font-size:13px;line-height:1.55;text-align:left}
     #shellMode button,#shellRules button,#shellRoom button{
       border:2px solid #f0d27a;background:linear-gradient(#4a3210,#2c1c08);color:#ffe9a8;
@@ -399,15 +423,18 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 <section id="shellRules">
 <h1 style="color:#e8c36a">ルール</h1>
 <div class="rules-body">
-<p>サイコロの大小で勝負。</p>
-<p>勝ったプレイヤーは下記の2つから選んで行動する</p>
-<p>・コマを1マス進める</p>
-<p>・チップを1枚積む</p>
-<p>また2の目で勝ったプレイヤーは下記の2つから選んで行動する。</p>
-<p>・コマをゴールまで進める</p>
-<p>・相手のチップを全て吸収する</p>
-<p>ゴールしたプレイヤーはサイコロを振り、出た目×チップ数　のポイントを獲得する。</p>
-<p>（チップ1枚＝100ポイント）</p>
+<div class="ruleHead" style="margin-top:6px">ー流れー</div>
+<div class="ruleRow"><div class="ruleArt"><span class="rDie"><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i></span><span class="ruleArr">vs</span><span class="rDie"><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i></span></div><div class="ruleTxt">2人でサイコロを振る<br>大きい方が<span class="ruleYes">勝ち</span><br>（同じ目は振り直し）</div></div>
+<div class="ruleHead">ー勝ったら1つ選ぶー</div>
+<div class="ruleRow"><div class="ruleArt"><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class=""></b><b class="g1"></b></span><span class="ruleArr">→</span><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class="g1"></b></span></div><div class="ruleTxt">コマを<span class="ruleGold">1マス</span>進める</div></div>
+<div class="ruleRow"><div class="ruleArt"><span class="rChip"></span><span class="ruleArr">→</span><span class="rChip"></span><span class="rChip"></span></div><div class="ruleTxt">チップを<span class="ruleGold">1枚</span>積む</div></div>
+<div class="ruleHead">ー2で勝ったらー</div>
+<div class="ruleRow"><div class="ruleArt"><span class="rDie lk"><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i class="o"></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i></span><span class="ruleYes" style="font-size:13px">LUCKY</span></div><div class="ruleTxt">すごい行動が<br>できる</div></div>
+<div class="ruleRow"><div class="ruleArt"><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class="g1"></b></span><span class="ruleArr">→</span><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class=""></b><b class=""></b><b class="g1 p"></b></span></div><div class="ruleTxt">①コマを<span class="ruleGold">ゴールまで</span></div></div>
+<div class="ruleRow"><div class="ruleArt"><span class="rChip c"></span><span class="rChip c"></span><span class="ruleArr">→</span><span class="rChip"></span></div><div class="ruleTxt">②相手のチップを<br><span class="ruleNo">全部うばう</span></div></div>
+<div class="ruleHead">ーゴールー</div>
+<div class="ruleRow"><div class="ruleArt"><span class="rDie"><i></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i></i></span><span class="ruleArr">×</span><span class="rChip"></span><span class="ruleArr">×</span><span class="ruleGold">100</span></div><div class="ruleTxt">ゴールしたらサイコロ<br>出た目×チップ数×100点</div></div>
+<div class="ruleSteps"><div class="ruleStep"><span class="ruleNum">・</span><div class="ruleStepBody">コマは1つ。まん中から始まる</div></div><div class="ruleStep"><span class="ruleNum">・</span><div class="ruleStepBody">チップは最初1枚ずつ</div></div></div>
 </div>
 <button onclick="hideShellRules()">戻る</button>
 </section>
