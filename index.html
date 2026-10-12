@@ -19,8 +19,8 @@
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261012f">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261012f">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261012g">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261012g">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -54,7 +54,7 @@
     #shellRules h1{margin:4px 0 6px;flex:none}#shellRules>button{margin-top:12px;flex:none}
 .ruleHead{margin:24px 0 6px;font-weight:900;font-size:15px;color:#e8c36a;text-align:center}
 .ruleSteps{margin:8px 0 12px}
-.ruleStep{display:flex;align-items:flex-start;gap:6px;margin:8px 0}
+.ruleStep{display:flex;align-items:flex-start;gap:6px;margin:12px 0}
 .ruleNum{flex:none;font-weight:900;font-size:15px;color:#e8c36a;min-width:1.2em;line-height:1.55}
 .ruleStepBody{flex:1;min-width:0;line-height:1.55}
 .ruleRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;padding:8px;background:#0a181066;border-radius:12px;border:1px solid #e8c36a33}
@@ -425,7 +425,9 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 <section id="shellRules">
 <h1 style="color:#e8c36a">ルール</h1>
 <div class="rules-body">
-<div class="ruleRow"><div class="ruleArt"><span class="rDie"><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i></span><span class="ruleArr">vs</span><span class="rDie"><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i></span></div><div class="ruleTxt">2人でサイコロを振る<br>大きい方が<span class="ruleYes">勝ち</span><br>（同じ目は振り直し）</div></div>
+<div class="ruleHead" style="margin-top:6px">ー流れー</div>
+<div class="ruleRow" style="justify-content:center"><div class="ruleArt"><span class="rDie"><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i></span><span class="ruleArr">vs</span><span class="rDie"><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i></span></div></div>
+<div class="ruleSteps"><div class="ruleStep"><span class="ruleNum">１</span><div class="ruleStepBody">お互いサイコロを振り<br>目の大きい方が勝ち</div></div><div class="ruleStep"><span class="ruleNum">２</span><div class="ruleStepBody">勝ったプレイヤーは２つの行動のどちらかを選ぶ</div></div><div class="ruleStep"><span class="ruleNum">３</span><div class="ruleStepBody">自分のゴールまでたどり着いてたら勝利</div></div><div class="ruleStep"><span class="ruleNum">４</span><div class="ruleStepBody">勝利ボーナスとしてサイコロを振り出た目×チップ数×１００ポイント獲得</div></div></div>
 <div class="ruleHead">ー勝ちー</div>
 <div class="ruleNumRow"><span class="ruleNum2">1</span><div class="ruleRow"><div class="ruleArt"><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class=""></b><b class="g1"></b></span><span class="ruleArr">→</span><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class="g1"></b></span></div><div class="ruleTxt">コマを<span class="ruleGold">1マス</span>進める</div></div></div>
 <div class="ruleNumRow"><span class="ruleNum2">2</span><div class="ruleRow"><div class="ruleArt"><span class="rChip"></span><span class="ruleArr">→</span><span class="rChip"></span><span class="rChip"></span></div><div class="ruleTxt">チップを<span class="ruleGold">1枚</span>積む</div></div></div>
@@ -434,8 +436,6 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 <div class="ruleNumRow"><span class="ruleNum2">1</span><div class="ruleRow"><div class="ruleArt"><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class="g1"></b></span><span class="ruleArr">→</span><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class=""></b><b class=""></b><b class="g1 p"></b></span></div><div class="ruleTxt">コマを<span class="ruleGold">ゴールまで</span></div></div></div>
 <div class="ruleNumRow"><span class="ruleNum2">2</span><div class="ruleRow"><div class="ruleArt"><span class="rChip c"></span><span class="rChip c"></span><span class="ruleArr">→</span><span class="rChip"></span></div><div class="ruleTxt">相手のチップを<br><span class="ruleNo">全部うばう</span></div></div></div>
 <div class="ruleChoose">1　2　のどちらかを選ぶ。</div>
-<div class="ruleHead">ーゴールー</div>
-<div class="ruleRow"><div class="ruleArt"><span class="rDie"><i></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i></i></span><span class="ruleArr">×</span><span class="rChip"></span><span class="ruleArr">×</span><span class="ruleGold">100</span></div><div class="ruleTxt"><span style="white-space:nowrap">ゴールしたらサイコロを振り</span><br><span style="white-space:nowrap">出た目×チップ数×100点</span></div></div>
 </div>
 <button onclick="hideShellRules()">戻る</button>
 </section>
