@@ -4,8 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- layout: safari-bar-lock-20261004 -->
-<meta name="dice-push-rev" content="20261013d-round-width">
+<meta name="dice-push-rev" content="20261013e-redo-unify">
 <script>
+
+/* UI tap sound: same as Dorokei sfxTap (sine 540Hz, 48ms, vol 0.028) */
+let uiTapCtx;
+function uiTapBeep(freq,dur,type,vol){
+  try{
+    uiTapCtx=uiTapCtx||new (window.AudioContext||window.webkitAudioContext)();
+    if(uiTapCtx.state==="closed") uiTapCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(uiTapCtx.state==="suspended") uiTapCtx.resume();
+    const ctx=uiTapCtx, o=ctx.createOscillator(), g=ctx.createGain();
+    const now=ctx.currentTime;
+    const d=Math.max(0.03,(dur||50)/1000);
+    const v=vol||0.03;
+    o.type=type||"sine";
+    o.frequency.setValueAtTime(freq, now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(v, now+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+d);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now); o.stop(now+d+0.02);
+  }catch(e){}
+}
+function uiTap(){ uiTapBeep(540,48,"sine",0.028); }
+document.addEventListener("click",function(e){ const b=e.target&&e.target.closest&&e.target.closest("button"); if(b&&!b.disabled) uiTap(); },true);
 (function(){
   var nav=navigator, mm=window.matchMedia;
   function q(s){return !!(mm&&mm.call(window,s).matches)}
@@ -271,6 +294,13 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
     }
     .overlay-card h2 { margin: 0 0 10px; font-size: 44px; font-weight: 900; letter-spacing: .06em; }
     .overlay-card h2.ask { font-size: 1.05rem; letter-spacing: 0; font-weight: 800; }
+
+    #restartOverlay{background:#000c;z-index:100;flex-direction:column;gap:12px;font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif}
+    #restartOverlay .overlay-card{background:none;border:0;border-radius:0;padding:0;width:auto;display:flex;flex-direction:column;align-items:center;gap:12px}
+    #restartOverlay .overlay-card h2.ask{margin:0;color:#e8c36a;font-size:16px;font-weight:800;letter-spacing:0;line-height:normal}
+    #restartOverlay .redoRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0}
+    #restartOverlay button{appearance:auto;box-sizing:border-box;margin:0;padding:1px 6px;width:auto;height:auto;cursor:pointer;border:2px solid #e8c36a;background:linear-gradient(#4a3210,#2c1c08);color:#e8c36a;border-radius:12px;min-height:46px;min-width:88px;font-weight:800;font-size:15px;line-height:normal;letter-spacing:0;font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif}
+    #restartOverlay button.gold{background:linear-gradient(#f0d27a,#c9a03a);color:#1a1208;border:0}
     .score-art {
       display: flex; align-items: flex-end; justify-content: center; gap: 12px; flex-wrap: wrap;
       min-height: 90px; margin: 4px 0 8px;
@@ -570,9 +600,9 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
   <div class="overlay" id="restartOverlay">
     <div class="overlay-card">
       <h2 class="ask">モード選択に戻りますか？</h2>
-      <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-        <button onclick="backToMode()">はい</button>
-        <button class="alt" onclick="hideRestart()">いいえ</button>
+      <div class="redoRow">
+        <button class="gold" onclick="backToMode()">はい</button>
+        <button onclick="hideRestart()">いいえ</button>
       </div>
     </div>
   </div>
