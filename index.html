@@ -19,8 +19,8 @@
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261012l">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261012l">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261012m">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261012m">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -61,6 +61,7 @@
 .ruleOr{text-align:center;font-weight:900;font-size:18px;color:#e8c36a;margin:-4px 0;letter-spacing:2px}.ruleOpt{display:inline-block;margin-right:4px;font-size:17px;color:#e8c36a}
 .ruleNumRow{display:flex;align-items:center;gap:6px}.ruleNumRow>.ruleRow{flex:1;min-width:0}.ruleNum2{flex:none;width:18px;text-align:center;font-weight:900;font-size:20px;color:#e8c36a}.ruleChoose{text-align:center;font-weight:700;margin:4px 0 0}
 .ruleOr2{text-align:center;font-weight:900;font-size:24px;color:#e8c36a;line-height:1;margin:-2px 0}
+.ruleBox{margin:22px 0 0;padding:12px 10px 6px;border:2px solid #e8c36a88;border-radius:16px;background:#0a18103a;box-sizing:border-box}
 .ruleArt{flex:none;display:flex;flex-wrap:wrap;gap:4px;align-items:center;max-width:100%}
 .ruleTxt{flex:1;min-width:min(100%,140px);line-height:1.55;text-align:center}
 .ruleNo{color:#ff4d4d;font-weight:900}.ruleYes{color:#3ddc6a;font-weight:900}.ruleGold{color:#e8c36a;font-weight:900}
@@ -428,14 +429,16 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 <div class="rules-body">
 <div class="ruleHead" style="margin-top:6px">ー流れー</div>
 <div class="ruleSteps"><div class="ruleStep"><span class="ruleNum">１</span><div class="ruleStepBody">お互いサイコロを振り<br>目の大きい方が勝ち</div></div><div class="ruleStep"><span class="ruleNum">２</span><div class="ruleStepBody">勝ったプレイヤーは２つの行動のどちらかを選ぶ</div></div><div class="ruleStep"><span class="ruleNum">３</span><div class="ruleStepBody">自分のゴールまでたどり着いてたら勝利</div></div><div class="ruleStep"><span class="ruleNum">４</span><div class="ruleStepBody">勝利ボーナスとしてサイコロを振り出た目×チップ数×１００ポイント獲得</div></div></div>
-<div class="ruleHead">ー勝ちー</div>
+<div class="ruleBox"><div class="ruleHead" style="margin-top:0">ー勝ちー</div>
 <div class="ruleRow"><div class="ruleArt"><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class=""></b><b class="g1"></b></span><span class="ruleArr">→</span><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class="p"></b><b class=""></b><b class="g1"></b></span></div><div class="ruleTxt">コマを<span class="ruleGold">1マス</span>進める</div></div>
 <div class="ruleOr2">or</div>
 <div class="ruleRow"><div class="ruleArt"><span class="rChip"></span><span class="ruleArr">→</span><span class="rChip"></span><span class="rChip"></span></div><div class="ruleTxt">チップを<span class="ruleGold">1枚</span>積む</div></div>
-<div class="ruleHead" style="margin-top:60px">ー<span class="rDie hd" aria-label="2"><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i></span>で勝ちー</div>
+</div>
+<div class="ruleBox" style="margin-top:40px"><div class="ruleHead" style="margin-top:0">ー<span class="rDie hd" aria-label="2"><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i></span>で勝ちー</div>
 <div class="ruleRow"><div class="ruleArt"><span class="rTrack"><b class="g2"></b><b class=""></b><b class="p"></b><b class=""></b><b class=""></b><b class=""></b><b class="g1"></b></span><span class="ruleArr">→</span><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class=""></b><b class=""></b><b class=""></b><b class="g1 p"></b></span></div><div class="ruleTxt"><span class="ruleGold">ゴールまでワープ</span></div></div>
 <div class="ruleOr2">or</div>
 <div class="ruleRow"><div class="ruleArt"><span class="rChip c"></span><span class="rChip c"></span><span class="ruleArr">→</span><span class="rChip"></span></div><div class="ruleTxt">相手のチップを<br><span class="ruleNo">全部うばう</span></div></div>
+</div>
 </div>
 <button onclick="hideShellRules()">戻る</button>
 </section>
