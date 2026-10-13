@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- layout: safari-bar-lock-20261004 -->
-<meta name="dice-push-rev" content="20261013e-redo-unify">
+<meta name="dice-push-rev" content="20261013f-goal-label">
 <script>
 
 /* UI tap sound: same as Dorokei sfxTap (sine 540Hz, 48ms, vol 0.028) */
@@ -42,8 +42,8 @@ document.addEventListener("click",function(e){ const b=e.target&&e.target.closes
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261013d">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261013d">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261013f">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261013f">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -96,7 +96,7 @@ document.addEventListener("click",function(e){ const b=e.target&&e.target.closes
 .rChip{width:24px;height:24px;border-radius:50%;background:#1d4e89;box-shadow:inset 0 0 0 3px #d9e7ff,inset 0 0 0 7px #1d4e89,inset 0 0 0 9px #d9e7ff;display:inline-block}
 .rChip.c{background:#8b1e28;box-shadow:inset 0 0 0 3px #ffd4d7,inset 0 0 0 7px #8b1e28,inset 0 0 0 9px #ffd4d7}
 .rTrack{display:flex;gap:2px;position:relative}.hop{position:absolute;overflow:visible;pointer-events:none;z-index:2}.rTrack b{width:18px;height:22px;border-radius:4px;background:#124a2c;border:1px solid #e8c36a44;display:flex;align-items:center;justify-content:center;font-size:11px}
-.rTrack b.g1{background:#1a3f66}.rTrack b.g2{background:#5a2026}.rTrack b.was svg{display:block}.rTrack b.p::after{content:"";width:10px;height:10px;border-radius:50%;background:#e8c36a}
+.rTrack b.g1{background:#1a3f66;position:relative}.rTrack b.g1::before{content:"ゴール";position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;font-size:9px;line-height:1;font-weight:700;color:#9fc4ee;white-space:nowrap}.ruleArt:has(.rTrack){padding-bottom:12px}.rTrack b.g2{background:#5a2026}.rTrack b.was svg{display:block}.rTrack b.p::after{content:"";width:10px;height:10px;border-radius:50%;background:#e8c36a}
 .rCard{width:28px;height:38px;border-radius:5px;background:#f7f1e3;color:#1a1208;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;box-shadow:inset 0 -2px 0 #0002}
 .rCard.bk{background:repeating-linear-gradient(45deg,#2a5a7a,#2a5a7a 4px,#1d4060 4px,#1d4060 8px);border:1.5px solid #d9e7ff}
 .rSlots{display:flex;gap:3px}.rSlot{display:flex;flex-direction:column;align-items:center;gap:3px}
