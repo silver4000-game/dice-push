@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- layout: safari-bar-lock-20261004 -->
-<meta name="dice-push-rev" content="20261015a-right-board">
+<meta name="dice-push-rev" content="20261015b-big-board">
 <script>
 
 /* UI tap sound: same as Dorokei sfxTap (sine 540Hz, 48ms, vol 0.028) */
@@ -42,8 +42,8 @@ document.addEventListener("click",function(e){ const b=e.target&&e.target.closes
   document.documentElement.style.setProperty('--safari-bar', bar+'px');
 })();
 </script>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261015a">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261015a">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261015b">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261015b">
   <meta name="apple-mobile-web-app-title" content="ダイスプッシュ" />
   <title>ダイスプッシュ</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap&v=20261004d" rel="stylesheet">
@@ -462,12 +462,12 @@ html.no-bar #chatPanel{bottom:calc(114px + var(--safari-bar, 83px))}
 <div class="ruleHead" style="margin-top:6px">ー　流れ　ー</div>
 <div class="ruleSteps"><div class="ruleStep"><span class="ruleNum">１</span><div class="ruleStepBody"><span style="white-space:nowrap">お互いサイコロを振り目の大きい方が勝ち</span></div></div><div class="ruleStep"><span class="ruleNum">２</span><div class="ruleStepBody">勝ったプレイヤーは２つの行動から選ぶ</div></div><div class="ruleStep"><span class="ruleNum">３</span><div class="ruleStepBody">ゴールまでたどり着いてたら勝利</div></div><div class="ruleStep"><span class="ruleNum">４</span><div class="ruleStepBody">勝利ボーナスとしてサイコロを振り<br><span class="fLine"><span class="fDie">？</span><span class="fX">×</span><span class="fStack"><i class="pchip you" style="top:6px;z-index:0"></i><i class="pchip you" style="top:3px;z-index:1"></i><i class="pchip you" style="top:0;z-index:2"></i></span><span class="fX">×</span><span class="f100">100</span><span class="fGet">獲得</span></span></div></div></div>
 <div class="ruleHead">ー　勝ち　ー</div><div class="ruleBox" style="margin-top:0">
-<div class="ruleRow"><div class="ruleArt" style="padding-top:14px;width:100%;justify-content:center"><span class="rTrack"><b class="g2"></b><b class=""></b><b class=""></b><b class="was"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.25" fill="none" stroke="#e8c36a" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="0 3.3379"/></svg></b><b class="p"></b><b class=""></b><b class="g1"></b><svg class="hop" style="left:65px;width:28px;height:13px;top:-11px" viewBox="0 0 28 13"><path d="M4 12 Q14 -9 24 9" fill="none" stroke="#ffd34d" stroke-width="2" stroke-linecap="round"/><path d="M24 13 l-3.5 -5 h7 z" fill="#ffd34d"/></svg></span></div><div class="ruleTxt">コマを<span class="ruleGold">1マス</span>進める</div></div>
+<div class="ruleRow"><div class="ruleArt" style="padding-top:21px;padding-bottom:18px;width:100%;justify-content:center"><span class="rTrack" style="zoom:1.5"><b class="g2"></b><b class=""></b><b class=""></b><b class="was"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.25" fill="none" stroke="#e8c36a" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="0 3.3379"/></svg></b><b class="p"></b><b class=""></b><b class="g1"></b><svg class="hop" style="left:65px;width:28px;height:13px;top:-11px" viewBox="0 0 28 13"><path d="M4 12 Q14 -9 24 9" fill="none" stroke="#ffd34d" stroke-width="2" stroke-linecap="round"/><path d="M24 13 l-3.5 -5 h7 z" fill="#ffd34d"/></svg></span></div><div class="ruleTxt">コマを<span class="ruleGold">1マス</span>進める</div></div>
 <div class="ruleOr2">or</div>
 <div class="ruleRow"><div class="ruleArt"><span class="rChip"></span><span class="ruleArr">→</span><span class="rChip"></span><span class="rChip"></span></div><div class="ruleTxt">チップを<span class="ruleGold">1枚</span>積む</div></div>
 </div>
 <div class="ruleHead" style="margin-top:60px">ー　<span class="rDie hd" aria-label="2"><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i></span>で勝ち　ー</div><div class="ruleBox" style="margin-top:0">
-<div class="ruleRow"><div class="ruleArt" style="padding-top:14px;width:100%;justify-content:center"><span class="rTrack"><b class="g2"></b><b class=""></b><b class="was"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.25" fill="none" stroke="#e8c36a" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="0 3.3379"/></svg></b><b class=""></b><b class=""></b><b class=""></b><b class="g1 p"></b><svg class="hop" style="left:45px;width:88px;height:16px;top:-14px" viewBox="0 0 88 16"><defs><marker id="hopHead" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#ffd34d"/></marker></defs><path d="M4 15 C 24 -6, 70 -6, 83 12" fill="none" stroke="#ffd34d" stroke-width="2" stroke-linecap="round" marker-end="url(#hopHead)"/></svg></span></div><div class="ruleTxt"><span class="ruleGold">ゴールまでワープ</span></div></div>
+<div class="ruleRow"><div class="ruleArt" style="padding-top:21px;padding-bottom:18px;width:100%;justify-content:center"><span class="rTrack" style="zoom:1.5"><b class="g2"></b><b class=""></b><b class="was"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.25" fill="none" stroke="#e8c36a" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="0 3.3379"/></svg></b><b class=""></b><b class=""></b><b class=""></b><b class="g1 p"></b><svg class="hop" style="left:45px;width:88px;height:16px;top:-14px" viewBox="0 0 88 16"><defs><marker id="hopHead" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#ffd34d"/></marker></defs><path d="M4 15 C 24 -6, 70 -6, 83 12" fill="none" stroke="#ffd34d" stroke-width="2" stroke-linecap="round" marker-end="url(#hopHead)"/></svg></span></div><div class="ruleTxt"><span class="ruleGold">ゴールまでワープ</span></div></div>
 <div class="ruleOr2">or</div>
 <div class="ruleRow"><div class="ruleArt"><span class="rChip c"></span><span class="rChip c"></span><span class="ruleArr">→</span><span class="rChip"></span><span class="rChip"></span></div><div class="ruleTxt">相手のチップを<br><span class="ruleNo">全部うばう</span></div></div>
 </div>
